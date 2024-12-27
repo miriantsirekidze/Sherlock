@@ -1,20 +1,48 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomeScreen from './screens/HomeScreen';
+import SearchScreen from './screens/SearchScreen';
+import TipScreen from './screens/TipScreen';
+import Saved from './screens/Saved';
+import Settings from './screens/Settings';
 
 export default function App() {
+
+  const RootStack = createNativeStackNavigator({
+    screens: {
+      Home: {
+        screen: HomeScreen,
+        options: { headerShown: false }
+      },
+      Search: {
+        screen: SearchScreen,
+        options: { headerShown: false }
+      },
+      Tip: {
+        screen: TipScreen,
+      },
+      Saved: {
+        screen: Saved
+      },
+      Settings: {
+        screen: Settings
+      }
+    },
+    screenOptions: {
+      headerShown: true,
+      headerStyle: { backgroundColor: '#333' },
+      headerTintColor: '#fff', animation: 'ios_from_right',
+    }
+  });
+
+  const Navigation = createStaticNavigation(RootStack);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <>
+      <StatusBar style='auto' />
+      <Navigation />
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
