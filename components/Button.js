@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import Feather from '@expo/vector-icons/Feather';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const Button = ({onPress, icon, text}) => {
 
@@ -10,7 +10,7 @@ const Button = ({onPress, icon, text}) => {
     <TouchableOpacity style={[conditional ? styles.button2 : styles.button1]} onPress={onPress}>
       <View style={styles.buttonContainer}>
         <Text style={styles.text}>{text}</Text>
-        {conditional ? null : <Feather name={icon} size={18} color={'#EEE'} style={{ marginLeft: 5 }} />}
+        {conditional ? null : <MaterialCommunityIcons name={icon} size={18} color={'#EEE'} style={{ marginLeft: 5 }} />}
       </View>
     </TouchableOpacity>
   )
@@ -22,11 +22,12 @@ const styles = StyleSheet.create({
   button1: {
     padding: 10,
     borderRadius: 50,
-    backgroundColor: "#00000050",
-    marginHorizontal: 5
+    backgroundColor: "#333",
+    marginHorizontal: 5,
+    elevation: 5
   },
   button2: {
-    marginHorizontal: 5
+    marginHorizontal: 5,
   },
   buttonContainer: {
     marginHorizontal: 20,

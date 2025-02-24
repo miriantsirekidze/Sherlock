@@ -6,6 +6,9 @@ import SearchScreen from './screens/SearchScreen';
 import TipScreen from './screens/TipScreen';
 import Saved from './screens/Saved';
 import Settings from './screens/Settings';
+import WebViewScreen from './screens/WebViewScreen';
+import Pimeyes from './components/Pimeyes';
+import GoogleLens from './components/GoogleLens';
 
 export default function App() {
 
@@ -27,6 +30,17 @@ export default function App() {
       },
       Settings: {
         screen: Settings
+      }, 
+      WebViewScreen: {
+        screen: WebViewScreen
+      },
+      Pimeyes: {
+        screen: Pimeyes,
+        options: {headerShown: false}
+      },
+      GoogleLens: {
+        screen: GoogleLens,
+        options: {headerShown: false}
       }
     },
     screenOptions: {
@@ -40,7 +54,7 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style='auto' />
+      <StatusBar style='light' />
       <Navigation />
     </>
   );

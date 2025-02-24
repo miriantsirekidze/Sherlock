@@ -5,14 +5,13 @@ import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
-const Tip = ({ title, description, image }) => {
-
+const Tip = ({ title, description, image, time }) => {
   const navigation = useNavigation()
-  
+
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={0.5} onPress={() => navigation.navigate("Tip", {title, description, image})}>
+    <TouchableOpacity style={styles.container} activeOpacity={0.5} onPress={() => navigation.navigate("Tip", { title, description, image })}>
       <Image source={image} style={{ position: 'absolute', width: '100%', height: '100%' }} />
-      <Text style={[styles.title, title == "Sherlock" ? {textAlign: 'right'} : null]}>{title}</Text>
+      <Text style={styles.title}>{title}</Text>
     </TouchableOpacity>
   );
 };
@@ -26,7 +25,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: 'hidden',
     marginVertical: 10,
-    backgroundColor: '#333'
+    backgroundColor: '#333',
   },
   title: {
     fontSize: 18,

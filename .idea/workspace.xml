@@ -5,11 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44fb1306-d012-42d0-9697-21c87c048ad6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/comics.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/food.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/google.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/items.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/movies.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/people.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/plants.jpeg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/post.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/reverse.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/sherlock.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/video.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/image/yandex.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Bing.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Bing.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Button.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Button.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/GoogleImages.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Lens.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Lens.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/TinEye.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/TinEye.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Tip.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Tip.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Tips.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Tips.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Toggle.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Trace.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Trace.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Yandex.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Yandex.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/HomeScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/HomeScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/Saved.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Saved.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/SearchScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/SearchScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/TipScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/TipScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/state.js" beforeDir="false" afterPath="$PROJECT_DIR$/state.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,6 +49,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2pRY1U0U3Fbyx8WZMcRNcvxWOwM" />
   <component name="ProjectViewState">
@@ -34,7 +65,7 @@
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;AndroidSdkUpdater&quot;
   }
 }</component>

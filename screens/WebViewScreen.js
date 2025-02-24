@@ -1,11 +1,23 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BackHandler, Platform } from 'react-native';
-import WebView from 'react-native-webview';
-import store$ from '../state';
+import { WebView } from 'react-native-webview';
+import { useNavigation } from '@react-navigation/native';
 
-const Lens = ({ uri, onUrlChange, onTitleChange }) => {
+const WebViewScreen = ({ route }) => {
+  const { url } = route.params;
   const [canGoBack, setCanGoBack] = useState(false);
+  const [pageTitle, setPageTitle] = useState("Loading...");
   const webViewRef = useRef(null);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: pageTitle, // Set the dynamic title
+      headerTitleStyle: {
+        fontSize: 18,
+      },
+    });
+  }, [navigation, pageTitle]);
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
@@ -25,39 +37,29 @@ const Lens = ({ uri, onUrlChange, onTitleChange }) => {
   }, [onAndroidBackPress]);
 
   const handleNavigationStateChange = (state) => {
-    store$.currentUrl.set(state.url); // Update the global state
-    setCanGoBack(state.canGoBack); // Update the `canGoBack` state
+    setCanGoBack(state.canGoBack);
 
-    if (onUrlChange) {
-      onUrlChange(state.url);
-    }
-
-    // Inject JavaScript to extract the page title
+    // Inject JavaScript to get the page title
     webViewRef.current?.injectJavaScript(`
       (function() {
         const title = document.title;
         window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
       })();
-      true; // Required for JavaScript to execute correctly
+      true;
     `);
   };
 
   return (
     <WebView
-      source={{ uri: `https://lens.google.com/uploadbyurl?url=${uri}` }}
+      source={{ uri: url }}
       ref={webViewRef}
       allowsBackForwardNavigationGestures
       onNavigationStateChange={handleNavigationStateChange}
-      setSupportMultipleWindows={false}
-      nestedScrollEnabled={true}
-      cacheMode="LOAD_CACHE_ELSE_NETWORK"
-      javaScriptEnabled={true}
-      domStorageEnabled={true}
       onMessage={(event) => {
         try {
           const message = JSON.parse(event.nativeEvent.data);
-          if (message.type === "title" && message.title && onTitleChange) {
-            onTitleChange(message.title); // Pass the title to the parent component
+          if (message.type === "title" && message.title) {
+            setPageTitle(message.title); // Update the header title dynamically
           }
         } catch (error) {
           console.warn("Error parsing message from WebView:", error);
@@ -67,4 +69,4 @@ const Lens = ({ uri, onUrlChange, onTitleChange }) => {
   );
 };
 
-export default Lens;
+export default WebViewScreen;

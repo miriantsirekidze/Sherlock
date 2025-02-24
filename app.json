@@ -34,6 +34,17 @@
         {
           "photosPermission": "The app accesses your photos to reverse image search."
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/CaudexBold.ttf",
+            "./assets/fonts/CaudexBoldItalic.ttf",
+            "./assets/fonts/CaudexRegular.ttf",
+            "./assets/fonts/CaudexItalic.ttf"
+          ]
+        }
       ]
     ]
   }
