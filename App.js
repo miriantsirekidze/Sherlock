@@ -33,14 +33,6 @@ export default function App() {
       }, 
       WebViewScreen: {
         screen: WebViewScreen
-      },
-      Pimeyes: {
-        screen: Pimeyes,
-        options: {headerShown: false}
-      },
-      GoogleLens: {
-        screen: GoogleLens,
-        options: {headerShown: false}
       }
     },
     screenOptions: {

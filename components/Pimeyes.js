@@ -1,11 +1,9 @@
-// Pimeyes.js
 import React, { useRef, useEffect, useState } from 'react';
-import { View, ActivityIndicator, Alert } from 'react-native';
+import { View, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 
-export default function Pimeyes({ route }) {
-  const { uri } = route.params;
+export default function Pimeyes({uri}) {
   const webViewRef = useRef(null);
   const [base64Data, setBase64Data] = useState(null);
 
@@ -129,7 +127,6 @@ export default function Pimeyes({ route }) {
         source={{ uri: 'https://pimeyes.com' }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
-        startInLoadingState={true}
         onLoadStart={handleLoadStart}
         onMessage={(event) => {
           console.log('WebView Message:', event.nativeEvent.data);
