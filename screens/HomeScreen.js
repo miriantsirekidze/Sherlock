@@ -1,3 +1,4 @@
+// HomeScreen.js
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Image, Dimensions, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,16 +9,13 @@ import * as NavigationBar from 'expo-navigation-bar';
 import Button from '../components/Button';
 import Tips from '../components/Tips';
 import AnimatedSearchButton from '../components/AnimatedSearchButton';
-
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import ModalComponent from '../components/ModalComponent';
 import AnimeSearch from '../components/AnimeSearch';
 import DefaultEngine from '../components/DefaultEngine';
-
-import { db, storage } from '../firebaseConfig';
-import { collection, addDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
+import * as FileSystem from 'expo-file-system';
+import {API_KEY} from '@env'
 
 const { height, width } = Dimensions.get('window');
 
@@ -30,7 +28,7 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selection, setSelection] = useState(null);
   const [isUrlValid, setIsUrlValid] = useState(null);
-  const [uri, setUri] = useState(null)
+  const [uri, setUri] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const navigation = useNavigation();
@@ -46,10 +44,10 @@ const HomeScreen = () => {
       quality: 1,
     });
 
-    console.log(result)
+    console.log(result);
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      setUri(result.assets[0].uri)
+      setUri(result.assets[0].uri);
       setSelection("image");
       if (isUrlValid === false) {
         setIsUrlValid(null);
@@ -57,47 +55,46 @@ const HomeScreen = () => {
     }
   };
 
-  const uploadImage = async (image) => {
-    if (image === lastUploaded.uri) {
-      // navigation.navigate('Search', { url: lastUploaded.url });
-      navigation.navigate('GoogleLens', { uri: uri });
+  // NEW: Replace Firebase upload with imgbb upload using fetch
+  const uploadImage = async (imageUri) => {
+    if (imageUri === lastUploaded.uri) {
+      navigation.navigate('Search', { url: lastUploaded.url, uri: uri });
       return;
     }
-    if (!image) return;
-    navigation.navigate('GoogleLens', { uri: uri });
+    if (!imageUri) return;
     setIsLoading(true);
     try {
-      const response = await fetch(image);
-      const blob = await response.blob();
-      const fileName = new Date().getTime(); // Use timestamp as filename
-      const storageRef = ref(storage, `Images/${fileName}`);
-      const uploadTask = uploadBytesResumable(storageRef, blob);
-      console.log('Starting upload');
-      uploadTask.on(
-        'state_changed',
-        null,
-        (error) => {
-          console.error('[FIREBASE ERROR] Code:', error.code);
-          console.error('[FIREBASE ERROR] Message:', error.message);
-          console.error('[FIREBASE ERROR] Server Response:', error.serverResponse || "No server response");
-          setIsLoading(false);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          // Store metadata in Firestore using collection "upload"
-          await addDoc(collection(db, "upload"), {
-            url: downloadURL,
-            timestamp: Date.now(),
-            storagePath: `Images/${fileName}` // Save path for deletion later
-          });
-          console.log('Upload complete');
-          setLastUploaded({ uri: image, url: downloadURL });
-          // navigation.navigate('Pimeyes', { url: downloadURL });
-          setIsLoading(false);
-        }
-      );
+      // Read file as base64.
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Create form data.
+      const formData = new FormData();
+      formData.append('image', base64);
+      formData.append('name', `upload_${new Date().getTime()}`);
+
+      // Set expiration to 3600 seconds (1 hour).
+      const uploadUrl = `https://api.imgbb.com/1/upload?expiration=3600&key=${API_KEY}`;
+
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        const downloadURL = result.data.url;
+        setLastUploaded({ uri: imageUri, url: downloadURL });
+        navigation.navigate('Search', { url: downloadURL, uri: uri });
+      } else {
+        console.error('ImgBB upload failed:', result);
+        Alert.alert("Upload failed", "ImgBB did not return success");
+      }
+      setIsLoading(false);
     } catch (error) {
       console.error('Upload failed:', error);
+      Alert.alert("Upload failed", error.message);
       setIsLoading(false);
     }
   };
@@ -122,32 +119,6 @@ const HomeScreen = () => {
     setUrlText("");
     setIsUrlValid(null);
   };
-
-  // Delete images in Firestore (and Storage) older than 1 hour
-  const checkAndDeleteExpiredImages = async () => {
-    const oneHourAgo = Date.now() - 60 * 60 * 1000; // 1 hour ago
-    const imagesRef = collection(db, "upload");
-    const q = query(imagesRef, where("timestamp", "<", oneHourAgo));
-
-    try {
-      const querySnapshot = await getDocs(q);
-      for (const docSnapshot of querySnapshot.docs) {
-        const { storagePath } = docSnapshot.data(); // Get storage path
-        // Delete image from Firebase Storage
-        const imageRef = ref(storage, storagePath);
-        await deleteObject(imageRef).catch(error => console.error("Error deleting storage:", error));
-        // Delete Firestore entry
-        await deleteDoc(docSnapshot.ref);
-        console.log(`✅ Deleted expired image: ${storagePath}`);
-      }
-    } catch (error) {
-      console.error("❌ Error deleting images:", error);
-    }
-  };
-
-  useEffect(() => {
-    checkAndDeleteExpiredImages();
-  }, []); // Run once when component mounts
 
   const Separator = () => (
     <View style={{ marginVertical: 8, borderBottomColor: 'white', borderBottomWidth: 1 }} />
@@ -177,10 +148,11 @@ const HomeScreen = () => {
               <View style={{ marginTop: '20%', alignItems: 'center', gap: 10 }}>
                 {isUrlValid === false && <Text style={styles.errorText}>Invalid URL</Text>}
                 <Button onPress={handleImage} icon="image" text="Image" />
+                <Text style={{color: 'white'}}>Or</Text>
                 <AnimatedSearchButton
                   urlText={urlText}
                   setUrlText={setUrlText}
-                  handleSearch={handleUrlSearch} // Pass modified function
+                  handleSearch={handleUrlSearch}
                 />
               </View>
             )}
@@ -189,7 +161,7 @@ const HomeScreen = () => {
                 <View style={styles.imageWrapper}>
                   <Image source={{ uri: image }} style={styles.image} />
                   <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
-                    <MaterialIcons name="settings" size={22} color="black" />
+                    <MaterialCommunityIcons name="star-four-points" size={20} color="white" />
                   </TouchableOpacity>
                   {isLoading && (
                     <View style={styles.loadingOverlayImage}>
@@ -298,12 +270,12 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    bottom: 8,
+    right: 8,
     height: 30,
     width: 30,
     borderRadius: 50,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#AB4ABA',
     alignItems: 'center',
     justifyContent: 'center'
   }

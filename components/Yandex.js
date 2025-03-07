@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { BackHandler, Platform, ScrollView } from 'react-native';
+import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
 

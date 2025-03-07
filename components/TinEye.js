@@ -42,6 +42,7 @@ const TinEye = ({ uri, onUrlChange, onTitleChange }) => {
     `);
   };
 
+
   return (
     <WebView
       source={{ uri: `https://www.tineye.com/search?url=${uri}` }}
@@ -49,9 +50,10 @@ const TinEye = ({ uri, onUrlChange, onTitleChange }) => {
       allowsBackForwardNavigationGestures
       onNavigationStateChange={handleNavigationStateChange}
       setSupportMultipleWindows={false}
-      nestedScrollEnabled={true}
+      nestedScrollEnabled={false}
       cacheMode="LOAD_CACHE_ELSE_NETWORK"
       javaScriptEnabled={true}
+      userAgent="Mozilla/5.0 (Linux; Android 11; Pixel 4 XL Build/RP1A.200720.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36"
       domStorageEnabled={true}
       onMessage={(event) => {
         try {

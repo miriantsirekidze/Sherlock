@@ -39,6 +39,7 @@ const DefaultEngine = () => {
           <ButtonComponent title="Yandex" icon={require('../assets/icons/yandex.png')} />
           <ButtonComponent title="Bing" icon={require('../assets/icons/bing.png')} />
           <ButtonComponent title="TinEye" icon={require('../assets/icons/tineye.png')} />
+          <ButtonComponent title="Pimeyes" icon={require('../assets/icons/pimeyes.png')} />
         </View>
       </View>
     </View>

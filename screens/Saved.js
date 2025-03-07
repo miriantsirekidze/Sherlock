@@ -79,6 +79,7 @@ const [loaded, error] = useFonts({
     <View style={styles.container}>
       <FlatList
         data={urls}
+        style={{marginBottom: 20}}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item, index }) => (
           <View style={styles.itemContainer}>
@@ -115,13 +116,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#333',
-    marginBottom: 20
   },
   itemContainer: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    marginBottom: 5,
+    marginBottom: 20,
   },
   top: {
     fontWeight: '600', 
