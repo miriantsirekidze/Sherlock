@@ -3,7 +3,7 @@ import { BackHandler, Platform, ScrollView } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
 
-const TinEye = ({ uri, onUrlChange, onTitleChange }) => {
+const TinEye = ({ url, onUrlChange, onTitleChange }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
 
@@ -45,13 +45,15 @@ const TinEye = ({ uri, onUrlChange, onTitleChange }) => {
 
   return (
     <WebView
-      source={{ uri: `https://www.tineye.com/search?url=${uri}` }}
+      source={{ uri: `https://www.tineye.com/search?url=${url}` }}
       ref={webViewRef}
       allowsBackForwardNavigationGestures
       onNavigationStateChange={handleNavigationStateChange}
       setSupportMultipleWindows={false}
-      nestedScrollEnabled={false}
+      nestedScrollEnabled={true}
       cacheMode="LOAD_CACHE_ELSE_NETWORK"
+      thirdPartyCookiesEnabled={true}
+      sharedCookiesEnabled={true}
       javaScriptEnabled={true}
       userAgent="Mozilla/5.0 (Linux; Android 11; Pixel 4 XL Build/RP1A.200720.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36"
       domStorageEnabled={true}

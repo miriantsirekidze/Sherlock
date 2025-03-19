@@ -31,7 +31,7 @@ const DefaultEngine = () => {
   );
 
   return (
-    <View style={{ marginVertical: 10 }}>
+    <View style={{ marginVertical: 0 }}>
       <Text style={styles.title}>Default Search Engine</Text>
       <View style={styles.dropdown}>
         <View style={{ gap: 10, marginTop: 10 }}>
@@ -39,7 +39,6 @@ const DefaultEngine = () => {
           <ButtonComponent title="Yandex" icon={require('../assets/icons/yandex.png')} />
           <ButtonComponent title="Bing" icon={require('../assets/icons/bing.png')} />
           <ButtonComponent title="TinEye" icon={require('../assets/icons/tineye.png')} />
-          <ButtonComponent title="Pimeyes" icon={require('../assets/icons/pimeyes.png')} />
         </View>
       </View>
     </View>
@@ -50,7 +49,7 @@ export default DefaultEngine;
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
@@ -61,8 +60,9 @@ const styles = StyleSheet.create({
   },
   iconTitleText: {
     color: 'white',
-    marginLeft: 5,
+    marginLeft: 10,
     fontSize: 15,
+    fontWeight: '500'
   },
   icon: {
     height: 26,

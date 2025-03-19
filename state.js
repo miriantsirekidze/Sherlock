@@ -5,6 +5,11 @@ const store$ = observable({
   currentUrl: "",
 
   anime: false,
+  imageCheck: false,
+  location: false, 
+  pimeyes: false,
+  fullPicarta: true,
+  fullPimeyes: true,
   defaultEngine: "Lens",
   
 

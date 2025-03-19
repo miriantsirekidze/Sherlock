@@ -6,37 +6,22 @@
   <component name="ChangeListManager">
     <list default="true" id="44fb1306-d012-42d0-9697-21c87c048ad6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/comics.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/food.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/google.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/items.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/movies.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/people.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/plants.jpeg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/post.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/reverse.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/sherlock.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/video.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/image/yandex.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/AnimatedSearchButton.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/AnimatedSearchButton.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/AnimeSearch.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Bing.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Bing.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Button.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Button.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/GoogleImages.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Lens.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Lens.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Mever.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Mever.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/ModalComponent.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/ModalComponent.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Pimeyes.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Pimeyes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/SliderItem.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/components/TinEye.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/TinEye.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Tip.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Tip.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Tips.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Tips.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/Toggle.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Trace.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Trace.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/components/Yandex.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Yandex.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/slider.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/screens/HomeScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/HomeScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/Saved.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Saved.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/screens/SearchScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/SearchScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/TipScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/TipScreen.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/state.js" beforeDir="false" afterPath="$PROJECT_DIR$/state.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

@@ -3,7 +3,7 @@ import { BackHandler, Platform, ScrollView } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
 
-const Trace = ({ uri, onUrlChange, onTitleChange }) => {
+const Trace = ({ url, onUrlChange, onTitleChange }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
 
@@ -23,6 +23,7 @@ const Trace = ({ uri, onUrlChange, onTitleChange }) => {
       };
     }
   }, [onAndroidBackPress]);
+
 
   const handleNavigationStateChange = (state) => {
     store$.currentUrl.set(state.url); // Update the global state
@@ -44,7 +45,7 @@ const Trace = ({ uri, onUrlChange, onTitleChange }) => {
 
   return (
     <WebView
-      source={{ uri: `https://trace.moe/?auto&url=${uri}` }}
+      source={{ uri: `https://trace.moe/?auto&url=${url}` }}
       ref={webViewRef}
       allowsBackForwardNavigationGestures
       onNavigationStateChange={handleNavigationStateChange}
