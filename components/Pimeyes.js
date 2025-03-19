@@ -1,11 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Alert } from 'react-native';
+import { View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
+import store$ from '../state';
 
-export default function Pimeyes({uri}) {
+export default function Pimeyes({ uri }) {
   const webViewRef = useRef(null);
   const [base64Data, setBase64Data] = useState(null);
+  const isFullPimeyes = store$.fullPimeyes.get() 
+
 
   useEffect(() => {
     const convertImageToBase64 = async () => {
@@ -18,8 +21,7 @@ export default function Pimeyes({uri}) {
         });
         setBase64Data(base64);
       } catch (error) {
-        console.error('Error converting image:', error);
-        Alert.alert('Error', error.message);
+        // Optionally handle the error (e.g., Alert.alert('Error', error.message));
       }
     };
     convertImageToBase64();
@@ -30,7 +32,7 @@ export default function Pimeyes({uri}) {
       // If already clicked, exit early.
       if (sessionStorage.getItem('UPLOAD_BUTTON_CLICKED')) return;
       
-      // Use MutationObserver to watch for the button.
+      // Use MutationObserver to watch for the upload button.
       const observer = new MutationObserver(() => {
         const button = document.querySelector('button.upload[aria-label="Upload photo"]');
         if (button && getComputedStyle(button).display !== 'none' && button.offsetParent !== null) {
@@ -86,21 +88,43 @@ export default function Pimeyes({uri}) {
           fileInput.dispatchEvent(new Event('change', { bubbles: true }));
           sessionStorage.setItem('FILE_INPUT_INJECTED', 'true');
           window.ReactNativeWebView.postMessage('FILE_INPUT_SUCCESS: File injected');
-        } else {\n          setTimeout(arguments.callee, 500);\n        }\n      })();
+        } else {
+          setTimeout(arguments.callee, 500);
+        }
+      })();
       true;
     `;
   };
 
+  // Updated injection script for checking permissions and clicking search
   const injectionScriptSearchClick = `
     (function() {
       // If already clicked, exit early.
       if (sessionStorage.getItem('SEARCH_CLICKED')) return;
+      
+      // Check for permissions checkboxes and click them if found.
+      const permissionsCheckboxes = document.querySelectorAll('.permissions input[type="checkbox"]');
+      if (permissionsCheckboxes && permissionsCheckboxes.length > 0) {
+        permissionsCheckboxes.forEach(function(checkbox) {
+          if (!checkbox.checked) {
+            checkbox.click();
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+        window.ReactNativeWebView.postMessage('PERMISSIONS_CHECKED: Permissions checkboxes checked');
+      }
+      
+      // Then attempt to click the search button.
       const searchButton = document.querySelector('.start-search-inner > button');
       if (searchButton && !searchButton.classList.contains('disabled')) {
         searchButton.click();
         sessionStorage.setItem('SEARCH_CLICKED', 'true');
         window.ReactNativeWebView.postMessage('SEARCH_CLICK: Search button clicked');
-      } else {\n        setTimeout(arguments.callee, 500);\n      }\n    })();
+      } else {
+        setTimeout(arguments.callee, 500);
+      }
+    })();
     true;
   `;
 
@@ -113,7 +137,7 @@ export default function Pimeyes({uri}) {
         }
       }, 1000);
       setTimeout(() => {
-        if (webViewRef.current) {
+        if (webViewRef.current && isFullPimeyes) {
           webViewRef.current.injectJavaScript(injectionScriptSearchClick);
         }
       }, 2000);
@@ -129,6 +153,7 @@ export default function Pimeyes({uri}) {
         domStorageEnabled={true}
         onLoadStart={handleLoadStart}
         onMessage={(event) => {
+          // Optionally handle messages from the web view:
           console.log('WebView Message:', event.nativeEvent.data);
         }}
       />

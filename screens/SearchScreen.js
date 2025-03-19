@@ -10,26 +10,30 @@ import Yandex from '../components/Yandex';
 import TinEye from '../components/TinEye';
 import Trace from '../components/Trace';
 import Pimeyes from '../components/Pimeyes';
-
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Lens from '../components/Lens';
+import Mever from '../components/Mever';
+import Picarta from '../components/Picarta';
 
 const SearchScreen = ({ route }) => {
   const navigation = useNavigation();
   NavigationBar.setBackgroundColorAsync('#333');
 
   const { url, uri } = route.params;
+  const encodedUrl = encodeURI(url);
 
-  // Global states (for URL, title, and bookmarking) remain
   const [currentUrl, setCurrentUrl] = useState(store$.currentUrl.get());
   const [currentTitle, setCurrentTitle] = useState("Title Placeholder");
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isAnime, setIsAnime] = useState(store$.anime.get());
+  const [isImageCheck, setIsImageCheck] = useState(store$.imageCheck.get());
+  const [isLocation, setIsLocation] = useState(store$.location.get())
+  const [isPimeyes, setIsPimeyes] = useState(store$.pimeyes.get())
   const [activeComponent, setActiveComponent] = useState(
-    isAnime ? 'Trace' : store$.defaultEngine.get()
+    isImageCheck ? 'Mever' : isLocation ? 'Picarta' : isPimeyes ? 'Pimeyes' : isAnime ? 'Trace' : store$.defaultEngine.get()
   );
 
-  // Track each engine's URL separately
+  // Track each engine's URL separately.
   const [engineUrls, setEngineUrls] = useState({
     Lens: null,
     Bing: null,
@@ -37,9 +41,11 @@ const SearchScreen = ({ route }) => {
     TinEye: null,
     Trace: null,
     Pimeyes: null,
+    Mever: null,
+    Picarta: null
   });
 
-  // Track each engine's title separately
+  // Track each engine's title separately.
   const [engineTitles, setEngineTitles] = useState({
     Lens: "Lens",
     Bing: "Bing",
@@ -47,6 +53,8 @@ const SearchScreen = ({ route }) => {
     TinEye: "Tineye",
     Trace: "Trace",
     Pimeyes: "Pimeyes",
+    Mever: "Mever",
+    Picarta: 'Picarta'
   });
 
   // Update the global URL when the active engine's URL changes.
@@ -66,10 +74,23 @@ const SearchScreen = ({ route }) => {
     }
   }, [currentUrl]);
 
-  // Update anime state and active component when SearchScreen loads.
+  // On mount, read the stored anime and imageCheck values and set active component.
   useEffect(() => {
     setIsAnime(store$.anime.get());
-    setActiveComponent(isAnime ? 'Trace' : store$.defaultEngine.get());
+    setIsImageCheck(store$.imageCheck.get());
+    setIsPimeyes(store$.pimeyes.get())
+    setIsLocation(store$.location.get())
+    if (store$.imageCheck.get() && !(store$.pimeyes.get())) {
+      setActiveComponent('Mever');
+    } else if (store$.anime.get()) {
+      setActiveComponent('Trace');
+    } else if (store$.location.get()) {
+      setActiveComponent('Picarta')
+    } else if (store$.pimeyes.get()) {
+      setActiveComponent('Pimeyes')
+    } else {
+      setActiveComponent(store$.defaultEngine.get());
+    }
   }, []);
 
   // Callback to update a specific engine's URL.
@@ -95,77 +116,100 @@ const SearchScreen = ({ route }) => {
     setIsBookmarked(!isBookmarked);
   };
 
-  // Define each WebView component with its individual callbacks.
-  const components = {
-    Lens: (
-      <Lens
-        uri={url}
-        onUrlChange={handleUrlChange('Lens')}
-        onTitleChange={handleTitleChange('Lens')}
-      />
-    ),
-    Bing: (
-      <Bing
-        uri={url}
-        onUrlChange={handleUrlChange('Bing')}
-        onTitleChange={handleTitleChange('Bing')}
-      />
-    ),
-    Yandex: (
-      <Yandex
-        uri={url}
-        onUrlChange={handleUrlChange('Yandex')}
-        onTitleChange={handleTitleChange('Yandex')}
-      />
-    ),
-    TinEye: (
-      <TinEye
-        uri={url}
-        onUrlChange={handleUrlChange('TinEye')}
-        onTitleChange={handleTitleChange('TinEye')}
-      />
-    ),
-    Trace: (
-      <Trace
-        uri={url}
-        onUrlChange={handleUrlChange('Trace')}
-        onTitleChange={handleTitleChange('Trace')}
-      />
-    ),
-    Pimeyes: (
+  const enabledComponents = {}
+
+  enabledComponents['Lens'] = (
+    <Lens
+      url={encodedUrl}
+      onUrlChange={handleUrlChange('Lens')}
+      onTitleChange={handleTitleChange('Lens')}
+    />
+  )
+  enabledComponents['Bing'] = (
+    <Bing
+      url={encodedUrl}
+      onUrlChange={handleUrlChange('Bing')}
+      onTitleChange={handleTitleChange('Bing')}
+    />
+  )
+  enabledComponents['Yandex'] = (
+    <Yandex
+      url={encodedUrl}
+      onUrlChange={handleUrlChange('Yandex')}
+      onTitleChange={handleTitleChange('Yandex')}
+    />
+  )
+  enabledComponents['TinEye'] = (
+    <TinEye
+      url={encodedUrl}
+      onUrlChange={handleUrlChange('TinEye')}
+      onTitleChange={handleTitleChange('TinEye')}
+    />
+  )
+  if (uri && isPimeyes) {
+    enabledComponents['Pimeyes'] = (
       <Pimeyes
         uri={uri}
+        url={url}
         onUrlChange={handleUrlChange('Pimeyes')}
         onTitleChange={handleTitleChange('Pimeyes')}
       />
-    ),
-  };
+    )
+  }
+  if (isAnime) {
+    enabledComponents['Trace'] = (
+      <Trace
+        uri={uri}
+        url={url}
+        onUrlChange={handleUrlChange('Trace')}
+        onTitleChange={handleTitleChange('Trace')}
+      />
+    )
+  }
+  if (isImageCheck) {
+    enabledComponents['Mever'] = (
+      <Mever
+        uri={uri}
+        url={url}
+      />
+    )
+  }
+  if (isLocation) {
+    enabledComponents['Picarta'] = (
+      <Picarta
+        uri={uri}
+        url={url}
+      />
+    )
+  }
 
-  // Define the tab buttons.
-  const allButtons = [
-    { img: require('../assets/icons/lens.png'), key: 'Lens' },
-    { img: require('../assets/icons/yandex.png'), key: 'Yandex' },
-    { img: require('../assets/icons/bing.png'), key: 'Bing' },
-    { img: require('../assets/icons/tineye.png'), key: 'TinEye' },
-    { img: require('../assets/icons/trace.png'), key: 'Trace' },
-    { img: require('../assets/icons/pimeyes.png'), key: 'Pimeyes' },
+
+  const enabledButtons = {};
+
+  if (isAnime) {
+    enabledButtons['Trace'] = { img: require('../assets/icons/trace.png'), key: 'Trace' };
+  }
+  if (Boolean(uri) && isPimeyes) {
+    enabledButtons['Pimeyes'] = { img: require('../assets/icons/pimeyes.png'), key: 'Pimeyes' };
+  }
+  if (isImageCheck) {
+    enabledButtons['Mever'] = { img: require('../assets/icons/mever.png'), key: 'Mever' };
+  }
+  if (isLocation) {
+    enabledButtons['Picarta'] = { img: require('../assets/icons/picarta.png'), key: 'Picarta' }
+  }
+  enabledButtons['Lens'] = { img: require('../assets/icons/lens.png'), key: 'Lens' };
+  enabledButtons['Yandex'] = { img: require('../assets/icons/yandex.png'), key: 'Yandex' };
+  enabledButtons['Bing'] = { img: require('../assets/icons/bing.png'), key: 'Bing' };
+  enabledButtons['TinEye'] = { img: require('../assets/icons/tineye.png'), key: 'TinEye' };
+
+
+  const buttonArray = [
+    { type: 'bookmark' },
+    ...Object.values(enabledButtons),
+    { type: 'home' }
   ];
 
-  // Filter out Trace if anime mode is off.
-  let filteredButtons = allButtons.filter(
-    (button) => !(button.key === 'Trace' && !isAnime)
-  );
-
-  // Reorder buttons: bookmark first, then default engine (and Trace if anime), then the remaining, then home.
-  const reorderedButtons = [
-    { type: 'bookmark' },
-    ...(isAnime ? [{ ...filteredButtons.find((btn) => btn.key === 'Trace') }] : []),
-    { ...filteredButtons.find((btn) => btn.key === store$.defaultEngine.get()) },
-    ...filteredButtons.filter(
-      (btn) => btn.key !== 'Trace' && btn.key !== store$.defaultEngine.get()
-    ),
-    { type: 'home' },
-  ].filter(Boolean);
 
   return (
     <View style={styles.container}>
@@ -173,7 +217,7 @@ const SearchScreen = ({ route }) => {
 
       {/* Render all WebViews concurrently; only the active one is visible */}
       <View style={styles.webViewContainer}>
-        {Object.keys(components).map((key) => (
+        {Object.keys(enabledButtons).map((key) => (
           <View
             key={key}
             style={[
@@ -181,7 +225,7 @@ const SearchScreen = ({ route }) => {
               key === activeComponent ? styles.activeWebView : styles.inactiveWebView,
             ]}
           >
-            {components[key]}
+            {enabledComponents[key]}
           </View>
         ))}
       </View>
@@ -189,7 +233,7 @@ const SearchScreen = ({ route }) => {
       {/* Bottom Tab Bar */}
       <View style={styles.buttonContainer}>
         <FlatList
-          data={reorderedButtons}
+          data={buttonArray}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item, index) => item.key || `static-${index}`}

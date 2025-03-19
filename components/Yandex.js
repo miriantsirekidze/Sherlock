@@ -3,7 +3,7 @@ import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
 
-const Yandex = ({ uri, onUrlChange, onTitleChange }) => {
+const Yandex = ({ url, onUrlChange, onTitleChange }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
 
@@ -42,9 +42,11 @@ const Yandex = ({ uri, onUrlChange, onTitleChange }) => {
     `);
   };
 
+  
+
   return (
     <WebView
-      source={{ uri: `https://yandex.com/images/search?source=collections&&url=${uri}&rpt=imageview&lang=en` }}
+      source={{ uri: `https://yandex.com/images/search?source=collections&&url=${url}&rpt=imageview&lang=en`, }}
       ref={webViewRef}
       allowsBackForwardNavigationGestures
       onNavigationStateChange={handleNavigationStateChange}
@@ -52,6 +54,7 @@ const Yandex = ({ uri, onUrlChange, onTitleChange }) => {
       nestedScrollEnabled={true}
       cacheMode="LOAD_CACHE_ELSE_NETWORK"
       javaScriptEnabled={true}
+      
       domStorageEnabled={true}
       userAgent="Mozilla/5.0 (Linux; Android 11; Pixel 4 XL Build/RP1A.200720.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36"
       onMessage={(event) => {

@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { slider } from '../data/slider';
-import SliderItem from './SliderItem';
+import { slider } from '../data/articles';
+import SliderItem from './ArticleItem';
 import Pagination from './Pagination';
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 

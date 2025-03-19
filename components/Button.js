@@ -2,16 +2,12 @@ import React from 'react'
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-const Button = ({onPress, icon, text}) => {
-
-  const conditional = text == "Pick Another"
+const Button = ({ onPress, icon, text }) => {
 
   return (
-    <TouchableOpacity style={[conditional ? styles.button2 : styles.button1]} onPress={onPress}>
-      <View style={styles.buttonContainer}>
-        <Text style={styles.text}>{text}</Text>
-        {conditional ? null : <MaterialCommunityIcons name={icon} size={18} color={'#EEE'} style={{ marginLeft: 5 }} />}
-      </View>
+    <TouchableOpacity style={styles.button} onPress={onPress}>
+      <Text style={styles.text}>{text}</Text>
+      <MaterialCommunityIcons name={icon} size={18} color={'#EEE'} style={{ marginLeft: 5 }} />
     </TouchableOpacity>
   )
 }
@@ -19,21 +15,16 @@ const Button = ({onPress, icon, text}) => {
 export default Button
 
 const styles = StyleSheet.create({
-  button1: {
-    padding: 10,
+  button: {
+    paddingVertical: 10,
     borderRadius: 50,
     backgroundColor: "#333",
-    marginHorizontal: 5,
-    elevation: 5
-  },
-  button2: {
-    marginHorizontal: 5,
-  },
-  buttonContainer: {
-    marginHorizontal: 20,
+    marginTop: 10,
+    elevation: 5,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingHorizontal: 20
   },
   text: {
     fontWeight: '600',

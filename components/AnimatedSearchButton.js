@@ -41,8 +41,8 @@ const AnimatedSearchButton = ({ urlText, setUrlText, handleSearch }) => {
     <Animated.View style={[styles.animatedButton, animatedStyle]}>
       {!isExpanded ? (
         <TouchableOpacity onPress={handleExpand} style={styles.iconButton}>
-          <Text style={{ color: 'white' }}>URL</Text>
-          <MaterialCommunityIcons name="link" size={24} color="white" />
+          <Text style={{ color: 'white', fontWeight: '600' }}>URL</Text>
+          <MaterialCommunityIcons style={{marginLeft: 5}} name="link" size={24} color="white" />
         </TouchableOpacity>
       ) : (
         <Animated.View style={styles.expandedContainer}>
@@ -53,9 +53,9 @@ const AnimatedSearchButton = ({ urlText, setUrlText, handleSearch }) => {
             placeholderTextColor="#aaa"
             value={urlText}
             onChangeText={setUrlText}
-            onBlur={handleCollapse} 
+            // onBlur={handleCollapse} 
           />
-          <TouchableOpacity onPress={handleSearchPress}>
+          <TouchableOpacity onPress={handleSearchPress} hitSlop={5}>
             <MaterialCommunityIcons name="search-web" size={24} color="white" style={styles.searchIcon} />
           </TouchableOpacity>
         </Animated.View>
@@ -68,17 +68,19 @@ export default AnimatedSearchButton;
 
 const styles = StyleSheet.create({
   animatedButton: {
-    height: 40,
+    marginTop: 10,
     borderRadius: 20,
     backgroundColor: '#333',
     justifyContent: 'center',
     overflow: 'hidden',
+    height: 40
   },
   iconButton: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
+    paddingHorizontal: 15,
   },
   expandedContainer: {
     flexDirection: 'row',

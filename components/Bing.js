@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { BackHandler, Platform, ScrollView } from 'react-native';
+import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
 
-const Bing = ({ uri, onUrlChange, onTitleChange }) => {
+const Bing = ({ url, onUrlChange, onTitleChange }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
 
@@ -44,7 +44,7 @@ const Bing = ({ uri, onUrlChange, onTitleChange }) => {
 
   return (
     <WebView
-      source={{ uri: `https://www.bing.com/images/search?view=detailv2&iss=sbi&form=SBIVSP&sbisrc=UrlPaste&q=imgurl:${uri}` }}
+      source={{ uri: `https://www.bing.com/images/search?view=detailv2&iss=sbi&form=SBIVSP&sbisrc=UrlPaste&q=imgurl:${url}` }}
       ref={webViewRef}
       allowsBackForwardNavigationGestures
       onNavigationStateChange={handleNavigationStateChange}

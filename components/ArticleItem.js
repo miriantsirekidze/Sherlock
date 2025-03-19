@@ -3,9 +3,9 @@ import { View, Text, Image, Dimensions, StyleSheet, TouchableOpacity } from 'rea
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('screen');
+const { width, height } = Dimensions.get('screen');
 
-const SliderItem = ({ item }) => {
+const ArticleItem = ({ item }) => {
 
   const navigation = useNavigation();
   const { title, shortDescription, image, description, time } = item;
@@ -29,13 +29,14 @@ const SliderItem = ({ item }) => {
   )
 }
 
-export default SliderItem
+export default ArticleItem
 
 const styles = StyleSheet.create({
   itemContainer: {
     alignItems: 'center',
     width: width,
-    height: '100%',
+    height: height * 0.45, // This makes each item 45% of the screen height
+    marginVertical: 10,   // Optional: adds space between items
   },
   timeContainer: {
     flexDirection: 'row',

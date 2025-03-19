@@ -1,23 +1,32 @@
-// HomeScreen.js
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Image, Dimensions, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  Image,
+  Dimensions,
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+  Alert
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as NavigationBar from 'expo-navigation-bar';
+import * as FileSystem from 'expo-file-system';
 
 import Button from '../components/Button';
-import Tips from '../components/Tips';
 import AnimatedSearchButton from '../components/AnimatedSearchButton';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import ModalComponent from '../components/ModalComponent';
-import AnimeSearch from '../components/AnimeSearch';
-import DefaultEngine from '../components/DefaultEngine';
-import * as FileSystem from 'expo-file-system';
-import {API_KEY} from '@env'
+import Optional from '../components/Optional';
+import ArticleItem from '../components/ArticleItem';
 
-const { height, width } = Dimensions.get('window');
+import { articles } from '../data/articles';
+import { KEY } from '@env';
+import { Filter } from '../components/Filter'
 
 const HomeScreen = () => {
   NavigationBar.setBackgroundColorAsync('#333');
@@ -28,26 +37,33 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selection, setSelection] = useState(null);
   const [isUrlValid, setIsUrlValid] = useState(null);
-  const [uri, setUri] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const navigation = useNavigation();
 
-  const validateUrl = (url) => {
-    const regex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg))/i;
-    return regex.test(url);
-  };
+  // Validate URL (using HEAD request)
+  async function validateUrl(url) {
+    if (!url || !url.trim()) return false;
+    try {
+      const res = await fetch(url, { method: 'HEAD' });
+      const contentType = res.headers.get('Content-Type');
+      if (contentType && contentType.startsWith('image/')) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return url.trim().startsWith("http");
+    }
+  }
 
   const handleImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 1,
     });
-
     console.log(result);
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      setUri(result.assets[0].uri);
       setSelection("image");
       if (isUrlValid === false) {
         setIsUrlValid(null);
@@ -55,41 +71,54 @@ const HomeScreen = () => {
     }
   };
 
-  // NEW: Replace Firebase upload with imgbb upload using fetch
-  const uploadImage = async (imageUri) => {
-    if (imageUri === lastUploaded.uri) {
-      navigation.navigate('Search', { url: lastUploaded.url, uri: uri });
+  const uploadFile = async ({ imageUri = null, imageUrl = null }) => {
+    if (imageUrl && imageUrl === lastUploaded.url) {
+      navigation.navigate('Search', { url: lastUploaded.url, uri: null });
       return;
     }
-    if (!imageUri) return;
+
+    if (imageUri && imageUri === lastUploaded.uri) {
+      navigation.navigate('Search', { url: lastUploaded.url, uri: imageUri });
+      return;
+    }
+    if (!imageUri && !imageUrl) return;
+
     setIsLoading(true);
     try {
-      // Read file as base64.
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      // Create form data.
       const formData = new FormData();
-      formData.append('image', base64);
-      formData.append('name', `upload_${new Date().getTime()}`);
+      let fileData;
 
-      // Set expiration to 3600 seconds (1 hour).
-      const uploadUrl = `https://api.imgbb.com/1/upload?expiration=3600&key=${API_KEY}`;
+      if (imageUri) {
+        fileData = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      } else {
+        fileData = imageUrl;
+      }
 
+      formData.append('file', fileData);
+      formData.append('fileName', `${new Date().getTime()}`);
+      formData.append('expire', '3600');
+
+      const uploadUrl = 'https://upload.imagekit.io/api/v1/files/upload';
       const response = await fetch(uploadUrl, {
         method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Basic ${KEY}`,
+        },
         body: formData,
       });
 
-      const result = await response.json();
-      if (result.success) {
-        const downloadURL = result.data.url;
-        setLastUploaded({ uri: imageUri, url: downloadURL });
-        navigation.navigate('Search', { url: downloadURL, uri: uri });
+      const data = await response.json();
+      if (!data.error) {
+        const downloadURL = data.url;
+        console.log("Upload success:", downloadURL);
+        setLastUploaded({ uri: imageUri, url: imageUrl ? imageUrl : downloadURL });
+        navigation.navigate('Search', { url: downloadURL, uri: imageUri ? imageUri : null });
       } else {
-        console.error('ImgBB upload failed:', result);
-        Alert.alert("Upload failed", "ImgBB did not return success");
+        console.error('ImageKit upload failed:', data.error);
+        Alert.alert("Upload failed", "ImageKit did not return success");
       }
       setIsLoading(false);
     } catch (error) {
@@ -99,8 +128,9 @@ const HomeScreen = () => {
     }
   };
 
-  const handleUrlSearch = (enteredUrl) => {
-    if (validateUrl(enteredUrl)) {
+  const handleUrlSearch = async (enteredUrl) => {
+    const isValid = await validateUrl(enteredUrl);
+    if (isValid) {
       setUrlText(enteredUrl);
       setIsUrlValid(true);
       console.log('URL is valid');
@@ -120,10 +150,6 @@ const HomeScreen = () => {
     setIsUrlValid(null);
   };
 
-  const Separator = () => (
-    <View style={{ marginVertical: 8, borderBottomColor: 'white', borderBottomWidth: 1 }} />
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -136,30 +162,43 @@ const HomeScreen = () => {
           <MaterialIcons name="bookmark-border" size={28} color="white" />
         </TouchableOpacity>
       </View>
-      <View style={styles.topSection}>
-        <View style={{ alignItems: 'center', marginTop: 10, height: '100%' }}>
-          <View style={styles.buttonRow}>
-            <ModalComponent visible={modalVisible} onClose={() => setModalVisible(false)}>
-              <AnimeSearch />
-              <Separator />
-              <DefaultEngine />
-            </ModalComponent>
-            {selection === null && (
-              <View style={{ marginTop: '20%', alignItems: 'center', gap: 10 }}>
-                {isUrlValid === false && <Text style={styles.errorText}>Invalid URL</Text>}
-                <Button onPress={handleImage} icon="image" text="Image" />
-                <Text style={{color: 'white'}}>Or</Text>
-                <AnimatedSearchButton
-                  urlText={urlText}
-                  setUrlText={setUrlText}
-                  handleSearch={handleUrlSearch}
-                />
+
+      <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.searchSection}>
+          {selection === null && (
+            <View style={styles.buttonRow}>
+              {isUrlValid === false && <Text style={styles.errorText}>URL is not correct</Text>}
+              <Button onPress={handleImage} icon="image" text="Image" />
+              <Text style={{ color: 'white', marginTop: 10 }}>Or</Text>
+              <AnimatedSearchButton
+                urlText={urlText}
+                setUrlText={setUrlText}
+                handleSearch={handleUrlSearch}
+              />
+            </View>
+          )}
+          {selection === "image" && (
+            <>
+              <View style={styles.imageWrapper}>
+                <Image source={{ uri: image }} style={styles.image} />
+                <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
+                  <MaterialCommunityIcons name="star-four-points" size={20} color="white" />
+                </TouchableOpacity>
+                {isLoading && (
+                  <View style={styles.loadingOverlayImage}>
+                    <ActivityIndicator size="large" color="white" />
+                  </View>
+                )}
               </View>
-            )}
-            {selection === "image" && (
-              <>
+              <Button onPress={() => uploadFile({ imageUri: image })} icon="image-search-outline" text="Search" />
+              <Button onPress={handleImage} icon="image" text="Change" />
+            </>
+          )}
+          {selection === "url" && (
+            <>
+              {isUrlValid ? (
                 <View style={styles.imageWrapper}>
-                  <Image source={{ uri: image }} style={styles.image} />
+                  <Image source={{ uri: urlText }} style={styles.image} />
                   <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
                     <MaterialCommunityIcons name="star-four-points" size={20} color="white" />
                   </TouchableOpacity>
@@ -169,41 +208,38 @@ const HomeScreen = () => {
                     </View>
                   )}
                 </View>
-                <Button onPress={() => uploadImage(image)} icon="image-search-outline" text="Search" />
-                <Button onPress={handleImage} icon="image" text="Image" />
-              </>
-            )}
-            {selection === "url" && (
-              <>
-                {isUrlValid ? (
-                  <View style={styles.imageWrapper}>
-                    <Image source={{ uri: urlText }} style={styles.image} />
-                    <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
-                      <MaterialIcons name="settings" size={22} color="black" />
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  isUrlValid === false && <Text style={styles.errorText}>Invalid URL</Text>
-                )}
-                <Button onPress={() => { navigation.navigate('Search', { url: urlText }) }} icon="image-search-outline" text="Search" />
-                <AnimatedSearchButton
-                  urlText={urlText}
-                  setUrlText={setUrlText}
-                  handleSearch={handleUrlSearch}
-                />
-              </>
-            )}
-          </View>
+              ) : (
+                isUrlValid === false && <Text style={styles.errorText}>Invalid URL</Text>
+              )}
+              <Button onPress={() => uploadFile({ imageUrl: urlText })} icon="image-search-outline" text="Search" />
+              <AnimatedSearchButton
+                urlText={urlText}
+                setUrlText={setUrlText}
+                handleSearch={handleUrlSearch}
+              />
+            </>
+          )}
         </View>
-      </View>
-      <View style={styles.tipsSection}>
-        <Tips />
-      </View>
+
+        <View style={styles.articlesSection}>
+          <Text style={{ fontSize: 21, color: 'white', margin: 20, fontWeight: 'bold' }}>Articles</Text>
+          {articles.map((item, index) => (
+            <ArticleItem key={index} item={item} />
+          ))}
+        </View>
+      </ScrollView>
+
+      <ModalComponent visible={modalVisible} onClose={() => setModalVisible(false)}>
+        <Optional isUrl={isUrlValid} />
+        {/* <Filter/> */}
+      </ModalComponent>
     </SafeAreaView>
   );
 };
 
 export default HomeScreen;
+
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -214,47 +250,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     margin: 20,
   },
-  backText: {
-    color: 'white',
-    fontWeight: 'bold'
+  contentContainer: {
+    flex: 1,
   },
-  topSection: {
+  scrollContent: {
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingBottom: 20,
+  },
+  searchSection: {
     paddingHorizontal: 10,
-    height: height * 0.4,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: height * 0.35,
+  },
+  articlesSection: {
+    width: '100%',
+    paddingVertical: 10,
   },
   buttonRow: {
-    height: '100%',
-    flexDirection: 'column',
     alignItems: 'center',
-    gap: 10,
-    width: width,
-    alignSelf: 'center',
-  },
-  imageContainer: {
-    padding: 10,
-    alignItems: 'center',
-    width: 200,
-    height: 200,
+    width: '100%',
+    marginVertical: 10,
   },
   imageWrapper: {
     width: 150,
     height: 150,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    marginBottom: 10,
   },
   image: {
     width: '100%',
     height: '100%',
     borderRadius: 20,
-    overflow: 'hidden'
-  },
-  tipsSection: {
-    flex: 1,
   },
   errorText: {
-    color: 'red',
+    color: '#ff3939',
     marginTop: 10,
+    padding: 10,
   },
   loadingOverlayImage: {
     position: 'absolute',
@@ -265,8 +298,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
-    borderRadius: 20
+    borderRadius: 20,
   },
   modalButton: {
     position: 'absolute',
@@ -277,6 +309,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: '#AB4ABA',
     alignItems: 'center',
-    justifyContent: 'center'
-  }
+    justifyContent: 'center',
+  },
 });
