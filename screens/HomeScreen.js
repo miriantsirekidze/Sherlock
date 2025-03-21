@@ -21,19 +21,17 @@ import AnimatedSearchButton from '../components/AnimatedSearchButton';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import ModalComponent from '../components/ModalComponent';
-import Optional from '../components/Optional';
 import ArticleItem from '../components/ArticleItem';
 
 import { articles } from '../data/articles';
 import { KEY } from '@env';
-import { Filter } from '../components/Filter'
 
 const HomeScreen = () => {
   NavigationBar.setBackgroundColorAsync('#333');
 
   const [image, setImage] = useState(null);
   const [urlText, setUrlText] = useState("");
-  const [lastUploaded, setLastUploaded] = useState({ uri: null, url: null });
+  const [lastUploaded, setLastUploaded] = useState({ uri: null, processedUrl: null, originalUrl: null });
   const [isLoading, setIsLoading] = useState(false);
   const [selection, setSelection] = useState(null);
   const [isUrlValid, setIsUrlValid] = useState(null);
@@ -72,16 +70,14 @@ const HomeScreen = () => {
   };
 
   const uploadFile = async ({ imageUri = null, imageUrl = null }) => {
-    if (imageUrl && imageUrl === lastUploaded.url) {
-      navigation.navigate('Search', { url: lastUploaded.url, uri: null });
+    if (imageUrl && lastUploaded.originalUrl && imageUrl === lastUploaded.originalUrl) {
+      navigation.navigate('Search', { url: lastUploaded.processedUrl, uri: null });
       return;
     }
-
-    if (imageUri && imageUri === lastUploaded.uri) {
-      navigation.navigate('Search', { url: lastUploaded.url, uri: imageUri });
+    if (imageUri && lastUploaded.uri && imageUri === lastUploaded.uri) {
+      navigation.navigate('Search', { url: lastUploaded.processedUrl, uri: imageUri });
       return;
     }
-    if (!imageUri && !imageUrl) return;
 
     setIsLoading(true);
     try {
@@ -114,7 +110,7 @@ const HomeScreen = () => {
       if (!data.error) {
         const downloadURL = data.url;
         console.log("Upload success:", downloadURL);
-        setLastUploaded({ uri: imageUri, url: imageUrl ? imageUrl : downloadURL });
+        setLastUploaded({ uri: imageUri, originalUrl: imageUrl, processedUrl: downloadURL });
         navigation.navigate('Search', { url: downloadURL, uri: imageUri ? imageUri : null });
       } else {
         console.error('ImageKit upload failed:', data.error);
@@ -229,10 +225,7 @@ const HomeScreen = () => {
         </View>
       </ScrollView>
 
-      <ModalComponent visible={modalVisible} onClose={() => setModalVisible(false)}>
-        <Optional isUrl={isUrlValid} />
-        {/* <Filter/> */}
-      </ModalComponent>
+      <ModalComponent visible={modalVisible} onClose={() => setModalVisible(false)} isUrl={isUrlValid}/>
     </SafeAreaView>
   );
 };

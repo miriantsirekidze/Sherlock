@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, FlatList, TouchableOpacity, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -14,6 +14,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Lens from '../components/Lens';
 import Mever from '../components/Mever';
 import Picarta from '../components/Picarta';
+import Images from '../components/Images';
+import Copyseeker from '../components/Copyseeker';
 
 const SearchScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -36,25 +38,29 @@ const SearchScreen = ({ route }) => {
   // Track each engine's URL separately.
   const [engineUrls, setEngineUrls] = useState({
     Lens: null,
+    Images: null,
     Bing: null,
     Yandex: null,
     TinEye: null,
     Trace: null,
     Pimeyes: null,
     Mever: null,
-    Picarta: null
+    Picarta: null,
+    Copyseeker: null
   });
 
   // Track each engine's title separately.
   const [engineTitles, setEngineTitles] = useState({
     Lens: "Lens",
+    Images: 'Images',
     Bing: "Bing",
     Yandex: "Yandex",
     TinEye: "Tineye",
     Trace: "Trace",
     Pimeyes: "Pimeyes",
     Mever: "Mever",
-    Picarta: 'Picarta'
+    Picarta: 'Picarta',
+    Copyseeker: 'Copyseeker',
   });
 
   // Update the global URL when the active engine's URL changes.
@@ -125,6 +131,13 @@ const SearchScreen = ({ route }) => {
       onTitleChange={handleTitleChange('Lens')}
     />
   )
+  enabledComponents['Images'] = (
+    <Images
+      url={url}
+      onUrlChange={handleUrlChange('Images')}
+      onTitleChange={handleTitleChange('Images')}
+    />
+  )
   enabledComponents['Bing'] = (
     <Bing
       url={encodedUrl}
@@ -144,6 +157,12 @@ const SearchScreen = ({ route }) => {
       url={encodedUrl}
       onUrlChange={handleUrlChange('TinEye')}
       onTitleChange={handleTitleChange('TinEye')}
+    />
+  )
+  enabledComponents['Copyseeker'] = (
+    <Copyseeker
+      uri={uri}
+      url={url}
     />
   )
   if (uri && isPimeyes) {
@@ -199,14 +218,22 @@ const SearchScreen = ({ route }) => {
     enabledButtons['Picarta'] = { img: require('../assets/icons/picarta.png'), key: 'Picarta' }
   }
   enabledButtons['Lens'] = { img: require('../assets/icons/lens.png'), key: 'Lens' };
+  enabledButtons['Images'] = {img: require('../assets/icons/google.png'), key: 'Images'}
   enabledButtons['Yandex'] = { img: require('../assets/icons/yandex.png'), key: 'Yandex' };
   enabledButtons['Bing'] = { img: require('../assets/icons/bing.png'), key: 'Bing' };
   enabledButtons['TinEye'] = { img: require('../assets/icons/tineye.png'), key: 'TinEye' };
+  enabledButtons['Copyseeker'] = {img: require('../assets/icons/copyseeker.png'), key: 'Copyseeker'}
 
+  const defaultComponentRef = useRef(activeComponent)
+  const defaultComponentKey = defaultComponentRef.current;
+  const engineButtons = Object.values(enabledButtons);
+  const defaultEngineButton = engineButtons.find(btn => btn.key === defaultComponentKey);
+  const otherEngineButtons = engineButtons.filter(btn => btn.key !== defaultComponentKey);
 
   const buttonArray = [
     { type: 'bookmark' },
-    ...Object.values(enabledButtons),
+    defaultEngineButton,
+    ...otherEngineButtons,
     { type: 'home' }
   ];
 
@@ -214,8 +241,6 @@ const SearchScreen = ({ route }) => {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" translucent={false} />
-
-      {/* Render all WebViews concurrently; only the active one is visible */}
       <View style={styles.webViewContainer}>
         {Object.keys(enabledButtons).map((key) => (
           <View
