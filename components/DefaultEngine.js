@@ -36,9 +36,11 @@ const DefaultEngine = () => {
       <View style={styles.dropdown}>
         <View style={{ gap: 10, marginTop: 10 }}>
           <ButtonComponent title="Lens" icon={require('../assets/icons/lens.png')} />
+          <ButtonComponent title="Images" icon={require('../assets/icons/google.png')} />
           <ButtonComponent title="Yandex" icon={require('../assets/icons/yandex.png')} />
           <ButtonComponent title="Bing" icon={require('../assets/icons/bing.png')} />
           <ButtonComponent title="TinEye" icon={require('../assets/icons/tineye.png')} />
+          <ButtonComponent title="Copyseeker" icon={require('../assets/icons/copyseeker.png')} />
         </View>
       </View>
     </View>

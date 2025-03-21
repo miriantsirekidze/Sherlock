@@ -62,7 +62,7 @@ const Filter = () => {
   };
 
   return (
-    <View style={{ marginTop: 10 }}>
+    <View>
       <CustomAlert />
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

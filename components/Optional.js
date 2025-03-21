@@ -70,7 +70,6 @@ const FilterSearch = ({ isUrl }) => {
 
   return (
     <View>
-      <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginVertical: 5 }}>Websites</Text>
       <View style={styles.individualContainer}>
         <View style={styles.alignContainer}>
           <TouchableOpacity onPress={() => setIsImageCheck(!isImageCheck)} style={styles.alignContainer}>

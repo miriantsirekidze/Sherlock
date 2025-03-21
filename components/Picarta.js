@@ -4,12 +4,10 @@ import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import store$ from '../state';
 
-const Picarta = ({ uri, url }) => {
+const Copyseeker = ({ uri, url }) => {
   const webViewRef = useRef(null);
   const [base64Data, setBase64Data] = useState(null);
-  const isFullPicarta = store$.fullPicarta.get(); // true by default
-
-  // Convert the image to base64 exactly like in Pimeyes.js
+  
   useEffect(() => {
     const convertImageToBase64 = async () => {
       try {
@@ -29,10 +27,12 @@ const Picarta = ({ uri, url }) => {
     }
   }, [uri]);
 
+  // Injection script to click the file upload ("Browse") button.
+  // New selector: <button class="btn btn-default upload-button">Browse</button>
   const injectionScriptClickUploadButton = `
     (function() {
       if (sessionStorage.getItem('UPLOAD_BUTTON_CLICKED')) return;
-      const btn = document.querySelector('button#upload-btn[aria-label="Upload photo"]');
+      const btn = document.querySelector('button.upload-button');
       if (btn) {
         btn.click();
         sessionStorage.setItem('UPLOAD_BUTTON_CLICKED', 'true');
@@ -48,7 +48,6 @@ const Picarta = ({ uri, url }) => {
     return `
       (function() {
         if (sessionStorage.getItem('FILE_INPUT_INJECTED')) return;
-        // Adjust the selector if needed. Here we use a general file input selector.
         const fileInput = document.querySelector('input[type="file"]');
         if (fileInput) {
           try {
@@ -85,14 +84,17 @@ const Picarta = ({ uri, url }) => {
     `;
   };
 
-  // Injection script for URL flow (unchanged)
+  // Injection script for URL flow.
+  // New selectors:
+  // • Text input: <input class="form-control enter-image" id="url" placeholder="Enter image address" type="text" value="">
+  // • Submit button: <button type="submit" class="search-button">Submit</button>
   const injectionScriptURLFlow = `
     (function() {
       if (sessionStorage.getItem('SEARCH_CLICKED')) return;
       let attempts = 0;
       const intervalInput = setInterval(() => {
         attempts++;
-        const input = document.querySelector('input#photo-url-input.form-control.link-search');
+        const input = document.querySelector('input#url.enter-image');
         if (input) {
           clearInterval(intervalInput);
           input.value = '${url}';
@@ -101,7 +103,7 @@ const Picarta = ({ uri, url }) => {
           let attemptsBtn = 0;
           const intervalBtn = setInterval(() => {
             attemptsBtn++;
-            const btn = document.querySelector('button#search-btn');
+            const btn = document.querySelector('button.search-button');
             if (btn && !btn.disabled) {
               clearInterval(intervalBtn);
               btn.click();
@@ -117,11 +119,12 @@ const Picarta = ({ uri, url }) => {
     true;
   `;
 
-  // New injection script to click the search button for full Picarta flow
+  // New injection script to click the search button for full Copyseeker flow.
+  // This can act as a fallback in full mode.
   const injectionScriptSearch = `
     (function() {
       if (sessionStorage.getItem('SEARCH_CLICKED')) return;
-      const searchButton = document.querySelector('span.common-btn.classify-btn');
+      const searchButton = document.querySelector('button.search-button');
       if (searchButton) {
         searchButton.click();
         sessionStorage.setItem('SEARCH_CLICKED', 'true');
@@ -133,25 +136,52 @@ const Picarta = ({ uri, url }) => {
     true;
   `;
 
+  // Injection script for ad blocking remains the same.
+  const injectionAdBlock = `
+    (function() {
+      var style = document.createElement('style');
+      style.innerHTML = \`
+        .ad, .ads, .advertisement, [id^="ad-"], iframe[src*="ad"],
+        #aswift_4_host {
+          display: none !important;
+        }
+      \`;
+      document.head.appendChild(style);
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1) {
+              if (node.matches && node.matches('#aswift_4_host, .ad, .ads, .advertisement, [id^="ad-"], iframe[src*="ad"]')) {
+                node.style.display = 'none';
+              }
+              node.querySelectorAll && node.querySelectorAll('#aswift_4_host, .ad, .ads, .advertisement, [id^="ad-"], iframe[src*="ad"]').forEach(function(el) {
+                el.style.display = 'none';
+              });
+            }
+          });
+        });
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    })();
+    true;
+  `;
+
   // Use onLoad so the page is fully rendered before running our scripts.
   const handleLoad = () => {
     if (webViewRef.current) {
       if (uri) {
-        // Run the click script for logging; note that the file dialog likely won't open due to security restrictions.
         webViewRef.current.injectJavaScript(injectionScriptClickUploadButton);
-        // After a short delay, inject the file directly into the file input element.
         setTimeout(() => {
           webViewRef.current.injectJavaScript(generateFileInputInjectionScript());
         }, 1000);
-        // If isFullPicarta is true, inject the search button click script after the file injection.
-        if (isFullPicarta) {
+        if (true) {
           setTimeout(() => {
             webViewRef.current.injectJavaScript(injectionScriptSearch);
           }, 2000);
         }
       } else if (!uri && url) {
         webViewRef.current.injectJavaScript(injectionScriptURLFlow);
-        if (isFullPicarta) {
+        if (true) {
           setTimeout(() => {
             webViewRef.current.injectJavaScript(injectionScriptSearch);
           }, 2000);
@@ -164,14 +194,17 @@ const Picarta = ({ uri, url }) => {
     <View style={{ flex: 1 }}>
       <WebView
         ref={webViewRef}
-        source={{ uri: 'https://picarta.ai' }}
+        source={{ uri: 'https://copyseeker.net' }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         onLoad={handleLoad}
+        onLoadEnd={() => {
+          webViewRef.current.injectJavaScript(injectionAdBlock);
+        }}
         onMessage={(event) => console.log('WebView Message:', event.nativeEvent.data)}
       />
     </View>
   );
 };
 
-export default Picarta;
+export default Copyseeker;
