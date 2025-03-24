@@ -1,14 +1,60 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Platform, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import store$ from '../state';
 
-export default function Pimeyes({ uri }) {
+export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
   const webViewRef = useRef(null);
   const [base64Data, setBase64Data] = useState(null);
-  const isFullPimeyes = store$.fullPimeyes.get() 
+  const [canGoBack, setCanGoBack] = useState(false);
+  const isFullPimeyes = store$.fullPimeyes.get()
 
+  const onAndroidBackPress = useCallback(() => {
+    if (canGoBack) {
+      webViewRef.current?.goBack();
+      return true;
+    }
+    return false;
+  }, [canGoBack]);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
+      };
+    }
+  }, [onAndroidBackPress]);
+
+  const handleMessage = (event) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data);
+      if (message.type === "title" && message.title && onTitleChange) {
+        onTitleChange(message.title); // Pass the title to the parent component
+      }
+    } catch (error) {
+      console.warn("Error parsing message from WebView:", error);
+    }
+  }
+
+  const handleNavigationStateChange = (state) => {
+    store$.currentUrl.set(state.url); // Update the global state
+    setCanGoBack(state.canGoBack); // Update the `canGoBack` state
+
+    if (onUrlChange) {
+      onUrlChange(state.url);
+    }
+
+    // Inject JavaScript to extract the page title
+    webViewRef.current?.injectJavaScript(`
+      (function() {
+        const title = document.title;
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
+      })();
+      true; // Required for JavaScript to execute correctly
+    `);
+  };
 
   useEffect(() => {
     const convertImageToBase64 = async () => {
@@ -21,7 +67,7 @@ export default function Pimeyes({ uri }) {
         });
         setBase64Data(base64);
       } catch (error) {
-        // Optionally handle the error (e.g., Alert.alert('Error', error.message));
+        console.log(error)
       }
     };
     convertImageToBase64();
@@ -145,18 +191,14 @@ export default function Pimeyes({ uri }) {
   };
 
   return (
-    <View style={{ flex: 1 }}>
       <WebView
         ref={webViewRef}
         source={{ uri: 'https://pimeyes.com' }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         onLoadStart={handleLoadStart}
-        onMessage={(event) => {
-          // Optionally handle messages from the web view:
-          console.log('WebView Message:', event.nativeEvent.data);
-        }}
+        onNavigationStateChange={handleNavigationStateChange}
+        onMessage={handleMessage}
       />
-    </View>
   );
 }
