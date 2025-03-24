@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity, Image, ToastAndroid } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { useNavigation } from '@react-navigation/native';
@@ -111,7 +111,7 @@ const SearchScreen = ({ route }) => {
 
   const toggleBookmark = () => {
     if (!currentUrl) {
-      console.warn("No URL to bookmark.");
+      ToastAndroid.show("Can't bookmark on this website.", ToastAndroid.SHORT)
       return;
     }
     if (isBookmarked) {
@@ -163,6 +163,8 @@ const SearchScreen = ({ route }) => {
     <Copyseeker
       uri={uri}
       url={url}
+      onUrlChange={handleUrlChange('Copyseeker')}
+      onTitleChange={handleTitleChange('Copyseeker')}
     />
   )
   if (uri && isPimeyes) {
@@ -190,6 +192,8 @@ const SearchScreen = ({ route }) => {
       <Mever
         uri={uri}
         url={url}
+        onUrlChange={handleUrlChange('Mever')}
+        onTitleChange={handleTitleChange('Mever')}
       />
     )
   }
@@ -198,6 +202,8 @@ const SearchScreen = ({ route }) => {
       <Picarta
         uri={uri}
         url={url}
+        onUrlChange={handleUrlChange('Picarta')}
+        onTitleChange={handleTitleChange('Picarta')}
       />
     )
   }
@@ -218,11 +224,11 @@ const SearchScreen = ({ route }) => {
     enabledButtons['Picarta'] = { img: require('../assets/icons/picarta.png'), key: 'Picarta' }
   }
   enabledButtons['Lens'] = { img: require('../assets/icons/lens.png'), key: 'Lens' };
-  enabledButtons['Images'] = {img: require('../assets/icons/google.png'), key: 'Images'}
+  enabledButtons['Images'] = { img: require('../assets/icons/google.png'), key: 'Images' }
   enabledButtons['Yandex'] = { img: require('../assets/icons/yandex.png'), key: 'Yandex' };
   enabledButtons['Bing'] = { img: require('../assets/icons/bing.png'), key: 'Bing' };
   enabledButtons['TinEye'] = { img: require('../assets/icons/tineye.png'), key: 'TinEye' };
-  enabledButtons['Copyseeker'] = {img: require('../assets/icons/copyseeker.png'), key: 'Copyseeker'}
+  enabledButtons['Copyseeker'] = { img: require('../assets/icons/copyseeker.png'), key: 'Copyseeker' }
 
   const defaultComponentRef = useRef(activeComponent)
   const defaultComponentKey = defaultComponentRef.current;

@@ -7,8 +7,7 @@ import TipScreen from './screens/TipScreen';
 import Saved from './screens/Saved';
 import Settings from './screens/Settings';
 import WebViewScreen from './screens/WebViewScreen';
-import Pimeyes from './components/Pimeyes';
-import GoogleLens from './components/GoogleLens';
+
 
 export default function App() {
 

@@ -24,6 +24,17 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
     }
   }, [onAndroidBackPress]);
 
+  const handleMessage = (event) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data);
+      if (message.type === "title" && message.title && onTitleChange) {
+        onTitleChange(message.title); // Pass the title to the parent component
+      }
+    } catch (error) {
+      console.warn("Error parsing message from WebView:", error);
+    }
+  }
+
   const handleNavigationStateChange = (state) => {
     store$.currentUrl.set(state.url); // Update the global state
     setCanGoBack(state.canGoBack); // Update the `canGoBack` state
@@ -42,8 +53,6 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
     `);
   };
 
-  
-
   return (
     <WebView
       source={{ uri: `https://yandex.com/images/search?source=collections&&url=${url}&rpt=imageview&lang=en`, }}
@@ -54,19 +63,9 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
       nestedScrollEnabled={true}
       cacheMode="LOAD_CACHE_ELSE_NETWORK"
       javaScriptEnabled={true}
-      
       domStorageEnabled={true}
       userAgent="Mozilla/5.0 (Linux; Android 11; Pixel 4 XL Build/RP1A.200720.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36"
-      onMessage={(event) => {
-        try {
-          const message = JSON.parse(event.nativeEvent.data);
-          if (message.type === "title" && message.title && onTitleChange) {
-            onTitleChange(message.title); // Pass the title to the parent component
-          }
-        } catch (error) {
-          console.warn("Error parsing message from WebView:", error);
-        }
-      }}
+      onMessage={handleMessage}
     />
   );
 };

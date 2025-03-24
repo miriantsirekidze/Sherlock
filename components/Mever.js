@@ -1,11 +1,30 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { View, Alert, Dimensions } from 'react-native';
+import { Dimensions, Platform, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
+import store$ from '../state'
 
-export default function Mever({ uri, url }) {
-  const webViewRef = useRef(null);
+export default function Mever({ uri, url, onUrlChange, onTitleChange }) {
   const [base64Data, setBase64Data] = useState(null);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const webViewRef = useRef(null);
+
+  const onAndroidBackPress = useCallback(() => {
+    if (canGoBack) {
+      webViewRef.current?.goBack();
+      return true;
+    }
+    return false;
+  }, [canGoBack]);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
+      };
+    }
+  }, [onAndroidBackPress]);
 
   useEffect(() => {
     const convertImageToBase64 = async () => {
@@ -19,7 +38,6 @@ export default function Mever({ uri, url }) {
         setBase64Data(base64);
       } catch (error) {
         console.error('Error converting image:', error);
-        Alert.alert('Error', error.message);
       }
     };
     if (uri) {
@@ -27,11 +45,9 @@ export default function Mever({ uri, url }) {
     }
   }, [uri]);
 
-  // Generate injection script using robust waiting similar to Pimeyes.js
   const generateInjectionScript = useCallback(() => {
-    // If neither uri nor url provided—or if uri is provided but base64Data isn’t ready—do nothing.
     if ((!uri && !url) || (uri && !base64Data)) return '';
-    
+
     return `
       (function() {
         if (sessionStorage.getItem('ForensicsInjectionDone')) return;
@@ -197,19 +213,47 @@ export default function Mever({ uri, url }) {
     }
   };
 
+  const handleMessage = (event) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data);
+      if (message.type === "title" && message.title && onTitleChange) {
+        onTitleChange(message.title); // Pass the title to the parent component
+      }
+    } catch (error) {
+      console.warn("Error parsing message from WebView:", error);
+    }
+  }
+
+  const handleNavigationStateChange = (state) => {
+    store$.currentUrl.set(state.url); // Update the global state
+    setCanGoBack(state.canGoBack); // Update the `canGoBack` state
+
+    if (onUrlChange) {
+      onUrlChange(state.url);
+    }
+
+    // Inject JavaScript to extract the page title
+    webViewRef.current?.injectJavaScript(`
+      (function() {
+        const title = document.title;
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
+      })();
+      true; // Required for JavaScript to execute correctly
+    `);
+  };
+
   const { width, height } = Dimensions.get('window');
 
   return (
-    <View style={{ flex: 1 }}>
-      <WebView
-        ref={webViewRef}
-        source={{ uri: 'https://mever.iti.gr/forensics/' }}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        onLoadStart={handleLoadStart}
-        style={{ width, height }}
-        onMessage={(event) => console.log('WebView Message:', event.nativeEvent.data)}
-      />
-    </View>
+    <WebView
+      ref={webViewRef}
+      source={{ uri: 'https://mever.iti.gr/forensics/' }}
+      javaScriptEnabled={true}
+      domStorageEnabled={true}
+      onLoadStart={handleLoadStart}
+      onNavigationStateChange={handleNavigationStateChange}
+      style={{ width, height }}
+      onMessage={handleMessage}
+    />
   );
 }

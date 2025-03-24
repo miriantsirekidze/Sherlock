@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { BackHandler, Platform, ScrollView } from 'react-native';
+import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
 
@@ -10,9 +10,9 @@ const Trace = ({ url, onUrlChange, onTitleChange }) => {
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
-      return true; // Prevent default back behavior
+      return true; 
     }
-    return false; // Allow default behavior (go back to the previous screen)
+    return false; 
   }, [canGoBack]);
 
   useEffect(() => {
@@ -25,15 +25,25 @@ const Trace = ({ url, onUrlChange, onTitleChange }) => {
   }, [onAndroidBackPress]);
 
 
+  const handleMessage = (event) => {
+    try {
+      const message = JSON.parse(event.nativeEvent.data);
+      if (message.type === "title" && message.title && onTitleChange) {
+        onTitleChange(message.title); // Pass the title to the parent component
+      }
+    } catch (error) {
+      console.warn("Error parsing message from WebView:", error);
+    }
+  }
+
   const handleNavigationStateChange = (state) => {
-    store$.currentUrl.set(state.url); // Update the global state
-    setCanGoBack(state.canGoBack); // Update the `canGoBack` state
+    store$.currentUrl.set(state.url);
+    setCanGoBack(state.canGoBack); 
 
     if (onUrlChange) {
       onUrlChange(state.url);
     }
 
-    // Inject JavaScript to extract the page title
     webViewRef.current?.injectJavaScript(`
       (function() {
         const title = document.title;
@@ -54,16 +64,7 @@ const Trace = ({ url, onUrlChange, onTitleChange }) => {
       cacheMode="LOAD_CACHE_ELSE_NETWORK"
       javaScriptEnabled={true}
       domStorageEnabled={true}
-      onMessage={(event) => {
-        try {
-          const message = JSON.parse(event.nativeEvent.data);
-          if (message.type === "title" && message.title && onTitleChange) {
-            onTitleChange(message.title); // Pass the title to the parent component
-          }
-        } catch (error) {
-          console.warn("Error parsing message from WebView:", error);
-        }
-      }}
+      onMessage={handleMessage}
     />
   );
 };
