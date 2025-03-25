@@ -190,7 +190,6 @@ const SearchScreen = ({ route }) => {
   if (isImageCheck) {
     enabledComponents['Mever'] = (
       <Mever
-        uri={uri}
         url={url}
         onUrlChange={handleUrlChange('Mever')}
         onTitleChange={handleTitleChange('Mever')}

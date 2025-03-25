@@ -10,7 +10,6 @@ const FilterSearch = ({ isUrl }) => {
   const [isImageCheck, setIsImageCheck] = useState(store$.imageCheck.get());
   const [isLocation, setIsLocation] = useState(store$.location.get())
   const [isPimeyes, setIsPimeyes] = useState(store$.pimeyes.get())
-  const [fullPicarta, setFullPicarta] = useState(store$.fullPicarta.get())
   const [fullPimeyes, setFullPimeyes] = useState(store$.fullPimeyes.get())
 
   useEffect(() => {
@@ -58,9 +57,8 @@ const FilterSearch = ({ isUrl }) => {
   }, [isPimeyes]);
 
   useEffect(() => {
-    store$.fullPicarta.set(fullPicarta)
     store$.fullPimeyes.set(fullPimeyes)
-  }, [fullPicarta, fullPimeyes])
+  }, [fullPimeyes])
 
   const Separator = () => {
     return (
@@ -128,7 +126,6 @@ const FilterSearch = ({ isUrl }) => {
         : null}
       <Separator />
       <View>
-        <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginVertical: 5 }}>Injection Settings</Text>
         <View style={{ marginVertical: 5 }}>
           <TouchableOpacity onPress={() => setFullPimeyes(!fullPimeyes)} style={styles.alignContainer} >
             <View style={styles.checkStyle}>
@@ -139,17 +136,6 @@ const FilterSearch = ({ isUrl }) => {
             </Text>
           </TouchableOpacity>
           <Text style={{ color: '#ccc', marginTop: 1 }}>PimEyes injection will go all the way to the results. If checked off injection will stop at uploading images window, could be better for result optimization.</Text>
-        </View>
-        <View style={{ marginVertical: 5 }}>
-          <TouchableOpacity onPress={() => setFullPicarta(!fullPicarta)} style={styles.alignContainer} >
-            <View style={styles.checkStyle}>
-              {fullPicarta ? (<MaterialIcons name="check" size={20} color="white"/>) : null}
-            </View>
-            <Text style={styles.titleText}>
-              Picarta Full Injection
-            </Text>
-          </TouchableOpacity>
-          <Text style={{ color: '#ccc', marginTop: 1 }}>Picarta injection will go all the way to the results. If checked off injection will stop at screen of two buttons, could be better for result optimization.</Text>
         </View>
       </View>
       <Separator/>

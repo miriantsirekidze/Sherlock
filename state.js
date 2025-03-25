@@ -8,7 +8,6 @@ const store$ = observable({
   imageCheck: false,
   location: false, 
   pimeyes: false,
-  fullPicarta: true,
   fullPimeyes: true,
   defaultEngine: "Lens",
   
