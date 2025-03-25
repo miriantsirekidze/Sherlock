@@ -1,10 +1,30 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import WebView from 'react-native-webview';
+import { BackHandler, Platform } from 'react-native'
 import * as FileSystem from 'expo-file-system';
+import store$ from '../state';
 
-const Copyseeker = ({ uri, url }) => {
+const Copyseeker = ({ uri, url, onUrlChange, onTitleChange }) => {
   const webViewRef = useRef(null);
   const [base64Data, setBase64Data] = useState(null);
+  const [canGoBack, setCanGoBack] = useState(false)
+
+  const onAndroidBackPress = useCallback(() => {
+    if (canGoBack) {
+      webViewRef.current?.goBack();
+      return true;
+    }
+    return false;
+  }, [canGoBack]);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
+      };
+    }
+  }, [onAndroidBackPress]);
 
   useEffect(() => {
     const convertImageToBase64 = async () => {
@@ -25,7 +45,6 @@ const Copyseeker = ({ uri, url }) => {
     }
   }, [uri]);
 
-  // Image upload scripts (original)
   const injectionScriptClickUploadButton = `
     (function() {
       if (sessionStorage.getItem('UPLOAD_BUTTON_CLICKED')) return;
@@ -80,7 +99,6 @@ const Copyseeker = ({ uri, url }) => {
     `;
   };
 
-  // Enhanced ad blocking script with specific container removal
   const injectionAdBlock = `
   (function() {
     var style = document.createElement('style');
@@ -174,7 +192,6 @@ const Copyseeker = ({ uri, url }) => {
   true;
   `;
 
-  // URL injection script (original working version)
   const getURLInjectionScript = () => {
     const escapedURL = url.replace(/'/g, "\\'").replace(/\n/g, '');
     return `
@@ -261,13 +278,38 @@ const Copyseeker = ({ uri, url }) => {
     `;
   };
 
-  // Handle WebView messages
   const handleMessage = (event) => {
-    const message = event.nativeEvent.data;
-    console.log('WebView Message:', message);
+    const rawData = event.nativeEvent.data;
+    
+    try {
+      const message = JSON.parse(rawData);
+      
+      if (message.type === "title" && message.title && onTitleChange) {
+        onTitleChange('Copyseeker');
+        return;
+      }
+    } catch (error) {
+    }
   };
 
-  // Execution handler
+  const handleNavigationStateChange = (state) => {
+    store$.currentUrl.set(state.url);
+    setCanGoBack(state.canGoBack)
+     
+    if (onUrlChange) {
+      const uniqueSuffix = '/#' + Math.random().toString(36).substring(2, 8);
+      onUrlChange(state.url + uniqueSuffix);
+    }
+
+    webViewRef.current?.injectJavaScript(`
+      (function() {
+        const title = 'Copyseeker';
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
+      })();
+      true;
+    `);
+  };
+
   const handleLoad = () => {
     if (webViewRef.current) {
       if (uri) {
@@ -295,6 +337,7 @@ const Copyseeker = ({ uri, url }) => {
       source={{ uri: 'https://copyseeker.net' }}
       onLoad={handleLoad}
       onMessage={handleMessage}
+      onNavigationStateChange={handleNavigationStateChange}
       injectedJavaScriptBeforeContentLoadedForMainFrameOnly={false}
       onContentProcessDidTerminate={() => webViewRef.current.reload()}
     />

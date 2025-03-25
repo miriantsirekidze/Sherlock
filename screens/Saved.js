@@ -54,7 +54,6 @@ const [loaded, error] = useFonts({
     const currentUrls = store$.urls.get();
     const updatedUrls = currentUrls.filter((item) => item.url?.value !== url && item.url !== url);
     store$.urls.set(updatedUrls); // Update the observable array
-    console.log("Updated URLs after deletion:", store$.urls.get());
   };
 
   const copyToClipboard = async (url) => {

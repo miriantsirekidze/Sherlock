@@ -111,7 +111,7 @@ const SearchScreen = ({ route }) => {
 
   const toggleBookmark = () => {
     if (!currentUrl) {
-      ToastAndroid.show("Can't bookmark on this website.", ToastAndroid.SHORT)
+      ToastAndroid.show("Can't bookmark on this Website.", ToastAndroid.SHORT)
       return;
     }
     if (isBookmarked) {
@@ -261,7 +261,6 @@ const SearchScreen = ({ route }) => {
         ))}
       </View>
 
-      {/* Bottom Tab Bar */}
       <View style={styles.buttonContainer}>
         <FlatList
           data={buttonArray}
