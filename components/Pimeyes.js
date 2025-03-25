@@ -34,7 +34,7 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
         onTitleChange(message.title); // Pass the title to the parent component
       }
     } catch (error) {
-      console.warn("Error parsing message from WebView:", error);
+      return
     }
   }
 
