@@ -1,13 +1,11 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import WebView from 'react-native-webview';
-import { BackHandler, Platform } from 'react-native'
-import * as FileSystem from 'expo-file-system';
+import { BackHandler, Platform } from 'react-native';
 import store$ from '../state';
 
-const Copyseeker = ({ uri, url, onUrlChange, onTitleChange }) => {
+const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
   const webViewRef = useRef(null);
-  const [base64Data, setBase64Data] = useState(null);
-  const [canGoBack, setCanGoBack] = useState(false)
+  const [canGoBack, setCanGoBack] = useState(false);
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
@@ -25,79 +23,6 @@ const Copyseeker = ({ uri, url, onUrlChange, onTitleChange }) => {
       };
     }
   }, [onAndroidBackPress]);
-
-  useEffect(() => {
-    const convertImageToBase64 = async () => {
-      try {
-        if (!uri) throw new Error('No image URI provided');
-        const fileInfo = await FileSystem.getInfoAsync(uri);
-        if (!fileInfo.exists) throw new Error('File does not exist');
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        setBase64Data(base64);
-      } catch (error) {
-        console.error('Error converting image:', error);
-      }
-    };
-    if (uri) {
-      convertImageToBase64();
-    }
-  }, [uri]);
-
-  const injectionScriptClickUploadButton = `
-    (function() {
-      if (sessionStorage.getItem('UPLOAD_BUTTON_CLICKED')) return;
-      const btn = document.querySelector('button.upload-button');
-      if (btn) {
-        btn.click();
-        sessionStorage.setItem('UPLOAD_BUTTON_CLICKED', 'true');
-        window.ReactNativeWebView.postMessage('CLICK_SUCCESS: Upload button clicked');
-      }
-    })();
-    true;
-  `;
-
-  const generateFileInputInjectionScript = () => {
-    if (!base64Data) return '';
-    return `
-      (function() {
-        if (sessionStorage.getItem('FILE_INPUT_INJECTED')) return;
-        const fileInput = document.querySelector('input[type="file"]');
-        if (fileInput) {
-          try {
-            const byteCharacters = atob('${base64Data}');
-            const byteArrays = [];
-            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-              const slice = byteCharacters.slice(offset, offset + 512);
-              const byteNumbers = new Array(slice.length);
-              for (let i = 0; i < slice.length; i++) {
-                byteNumbers[i] = slice.charCodeAt(i);
-              }
-              const byteArray = new Uint8Array(byteNumbers);
-              byteArrays.push(byteArray);
-            }
-            const blob = new Blob(byteArrays, { type: 'image/jpeg' });
-            const file = new File([blob], 'upload.jpg', {
-              type: 'image/jpeg',
-              lastModified: Date.now()
-            });
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-            fileInput.dispatchEvent(new Event('change', { bubbles: true }));
-            sessionStorage.setItem('FILE_INPUT_INJECTED', 'true');
-            window.ReactNativeWebView.postMessage('FILE_INPUT_SUCCESS: File injected');
-          } catch (e) {
-            window.ReactNativeWebView.postMessage('ERROR: File injection failed: ' + e.message);
-          }
-        } else {
-          setTimeout(arguments.callee, 500);
-        }
-      })();
-      true;
-    `;
-  };
 
   const injectionAdBlock = `
   (function() {
@@ -294,7 +219,7 @@ const Copyseeker = ({ uri, url, onUrlChange, onTitleChange }) => {
 
   const handleNavigationStateChange = (state) => {
     store$.currentUrl.set(state.url);
-    setCanGoBack(state.canGoBack)
+    setCanGoBack(state.canGoBack);
      
     if (onUrlChange) {
       const uniqueSuffix = '/#' + Math.random().toString(36).substring(2, 8);
@@ -308,17 +233,6 @@ const Copyseeker = ({ uri, url, onUrlChange, onTitleChange }) => {
       })();
       true;
     `);
-  };
-
-  const handleLoad = () => {
-    if (webViewRef.current) {
-      if (uri) {
-        webViewRef.current.injectJavaScript(injectionScriptClickUploadButton);
-        setTimeout(() => {
-          webViewRef.current.injectJavaScript(generateFileInputInjectionScript());
-        }, 1000);
-      }
-    }
   };
 
   return (
@@ -335,7 +249,6 @@ const Copyseeker = ({ uri, url, onUrlChange, onTitleChange }) => {
         }
       }}
       source={{ uri: 'https://copyseeker.net' }}
-      onLoad={handleLoad}
       onMessage={handleMessage}
       onNavigationStateChange={handleNavigationStateChange}
       injectedJavaScriptBeforeContentLoadedForMainFrameOnly={false}
