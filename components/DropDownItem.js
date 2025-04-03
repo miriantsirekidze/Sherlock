@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, customAlert, placeholder, icon }) => {
-  const [display, setDisplay] = useState(!!value); // Initialize display based on value
+const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, customAlert, placeholder, icon, onSubmit }) => {
+  const [tempValue, setTempValue] = useState(value);
+  const [display, setDisplay] = useState(false);
+
+  useEffect(() => {
+    setTempValue(value);
+  }, [value]);
 
   return (
     <View style={styles.container}>
@@ -18,11 +23,11 @@ const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, custom
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Dropdown
           style={styles.dropdown}
-          placeholderStyle={[{ fontSize: 14 }, value !== null ? { color: '#EDEADE' } : { color: '#FFFFFF90' }]}
-          selectedTextStyle={styles.selectedTextStyle}
+          placeholderStyle={[{ fontSize: 14 }, tempValue !== null ? { color: '#EDEADE' } : { color: '#FFFFFF90' }]}
+          selectedTextStyle={[styles.selectedTextStyle, display ? { color: '#EDEADE' } : { color: '#FFFFFF50' }]}
           containerStyle={{ borderRadius: 10, backgroundColor: '#333', overflow: 'hidden' }}
           itemTextStyle={{ color: '#EDEADE', fontSize: 15 }}
-          itemContainerStyle={{ backgroundColor: '#333'}}
+          itemContainerStyle={{ backgroundColor: '#333' }}
           inputSearchStyle={styles.inputSearchStyle}
           iconStyle={styles.iconStyle}
           data={data}
@@ -31,23 +36,23 @@ const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, custom
           maxHeight={300}
           labelField="key"
           valueField="code"
-          placeholder={!isFocus && !value ? placeholder : value || 'select'}
+          placeholder={!isFocus && !tempValue ? placeholder : tempValue || 'select'}
           searchPlaceholder="Search..."
-          value={value}
-          backgroundColor='#00000095'
+          value={tempValue}
+          backgroundColor="#00000095"
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onChange={item => {
-            setValue(item.code); // Update value with the selected item's code
-            setDisplay(true); // Set display to true when a value is selected
+            setTempValue(item.code);
+            setDisplay(true);
           }}
           renderLeftIcon={() => {
-            if (value) {
-              // If a value is selected, show the "close-circle" icon to reset the selection
+            if (tempValue) {
               return (
                 <TouchableOpacity onPress={() => {
-                  setValue(null); // Reset value to null
-                  setDisplay(false); // Set display to false
+                  setTempValue(null);
+                  setDisplay(false);
+                  setValue(null); 
                 }}>
                   <MaterialCommunityIcons
                     style={styles.icon}
@@ -58,7 +63,6 @@ const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, custom
                 </TouchableOpacity>
               );
             } else {
-              // If no value is selected, show the default icon
               return (
                 <Ionicons
                   style={styles.icon}
@@ -71,7 +75,11 @@ const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, custom
           }}
         />
         {display && (
-          <TouchableOpacity style={styles.checkIcon}>
+          <TouchableOpacity style={styles.checkIcon} onPress={() => {
+            onSubmit(tempValue);
+            setDisplay(false);
+            setValue(tempValue); 
+          }}>
             <MaterialCommunityIcons name="check" size={24} color="black" />
           </TouchableOpacity>
         )}
