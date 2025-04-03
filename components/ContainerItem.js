@@ -12,13 +12,12 @@ const ContainerItem = ({
   editable 
 }) => {
   const [inputValue, setInputValue] = useState(value || '');
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(value !== null);
 
+  // Update local state whenever the prop value changes, and set submitted accordingly
   useEffect(() => {
-    if (value === null) {
-      setInputValue('');
-      setSubmitted(false);
-    }
+    setInputValue(value || '');
+    setSubmitted(value !== null);
   }, [value]);
 
   const handleClear = () => {
