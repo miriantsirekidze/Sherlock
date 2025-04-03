@@ -91,10 +91,11 @@ const HomeScreen = () => {
       } else {
         fileData = imageUrl;
       }
+      const time = new Date().getTime()
 
       formData.append('file', fileData);
-      formData.append('fileName', `${new Date().getTime()}`);
-      formData.append('expire', '3600');
+      formData.append('fileName', `${time}`);
+      formData.append('expire', `${time + 3560}`);
 
       const uploadUrl = 'https://upload.imagekit.io/api/v1/files/upload';
       const response = await fetch(uploadUrl, {

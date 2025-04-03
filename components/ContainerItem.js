@@ -1,17 +1,31 @@
-import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native'
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-const ContainerItem = ({ text, placeholder, value, onChangeText, customAlert }) => {
-  const [display, setDisplay] = useState(false);
+const ContainerItem = ({ 
+  text, 
+  placeholder, 
+  value, 
+  onChangeText, 
+  customAlert, 
+  onSubmit,
+  editable 
+}) => {
+  const [inputValue, setInputValue] = useState(value || '');
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    if (value !== null) {
-      setDisplay(true);
-    } else {
-      setDisplay(false);
+    if (value === null) {
+      setInputValue('');
+      setSubmitted(false);
     }
   }, [value]);
+
+  const handleClear = () => {
+    setInputValue('');
+    setSubmitted(false);
+    onChangeText(null); 
+  };
 
   return (
     <View style={styles.container}>
@@ -21,23 +35,33 @@ const ContainerItem = ({ text, placeholder, value, onChangeText, customAlert }) 
           <MaterialCommunityIcons name="help" size={18} color="white" />
         </TouchableOpacity>
       </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+      <View style={styles.row}>
         <View style={styles.inputContainer}>
           <TextInput
-            style={styles.textInput}
+            style={[
+              styles.textInput,
+              submitted ? { color: '#EADEDE' } : {}
+            ]}
             placeholder={placeholder}
-            placeholderTextColor={'#FFFFFF90'}
-            value={value}
-            onChangeText={(text) => onChangeText(text)}
+            placeholderTextColor={'#FFFFFF95'}
+            value={inputValue}
+            editable={editable && !submitted}
+            onChangeText={setInputValue}
           />
-          {display && (
-            <TouchableOpacity style={styles.clearIcon} onPress={() => onChangeText(null)}>
+          {inputValue !== '' && (
+            <TouchableOpacity style={styles.clearIcon} onPress={handleClear}>
               <MaterialCommunityIcons name="close-circle" size={24} color="white" />
             </TouchableOpacity>
           )}
         </View>
-        {display && (
-          <TouchableOpacity style={styles.checkIcon}>
+        {!submitted && inputValue !== '' && (
+          <TouchableOpacity 
+            style={styles.checkIcon} 
+            onPress={() => {
+              onSubmit(inputValue);
+              setSubmitted(true);
+            }}
+          >
             <MaterialCommunityIcons name="check" size={24} color="black" />
           </TouchableOpacity>
         )}
@@ -46,13 +70,13 @@ const ContainerItem = ({ text, placeholder, value, onChangeText, customAlert }) 
   );
 };
 
-export default ContainerItem
+export default ContainerItem;
 
 const styles = StyleSheet.create({
   text: {
     color: 'white',
     fontSize: 14,
-    flexShrink: 1
+    flexShrink: 1,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -64,7 +88,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginTop: 10,
     position: 'relative',
-    elevation: 5
+    elevation: 5,
   },
   textInput: {
     flex: 1,
@@ -83,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#444',
     borderRadius: 20,
     elevation: 8,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   titleContainer: {
     flexDirection: 'row',
@@ -98,5 +122,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
-  }
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
 });

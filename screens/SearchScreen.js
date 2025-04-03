@@ -35,7 +35,6 @@ const SearchScreen = ({ route }) => {
     isImageCheck ? 'Mever' : isLocation ? 'Picarta' : isPimeyes ? 'Pimeyes' : isAnime ? 'Trace' : store$.defaultEngine.get()
   );
 
-  // Track each engine's URL separately.
   const [engineUrls, setEngineUrls] = useState({
     Lens: null,
     Images: null,
@@ -49,7 +48,6 @@ const SearchScreen = ({ route }) => {
     Copyseeker: null
   });
 
-  // Track each engine's title separately.
   const [engineTitles, setEngineTitles] = useState({
     Lens: "Lens",
     Images: 'Images',
@@ -63,24 +61,20 @@ const SearchScreen = ({ route }) => {
     Copyseeker: 'Copyseeker',
   });
 
-  // Update the global URL when the active engine's URL changes.
   useEffect(() => {
     setCurrentUrl(engineUrls[activeComponent]);
   }, [activeComponent, engineUrls]);
 
-  // Update the global title when the active engine's title changes.
   useEffect(() => {
     setCurrentTitle(engineTitles[activeComponent]);
   }, [activeComponent, engineTitles]);
 
-  // Update isBookmarked based on currentUrl.
   useEffect(() => {
     if (currentUrl) {
       setIsBookmarked(store$.isBookmarked(currentUrl));
     }
   }, [currentUrl]);
 
-  // On mount, read the stored anime and imageCheck values and set active component.
   useEffect(() => {
     setIsAnime(store$.anime.get());
     setIsImageCheck(store$.imageCheck.get());
@@ -99,12 +93,11 @@ const SearchScreen = ({ route }) => {
     }
   }, []);
 
-  // Callback to update a specific engine's URL.
   const handleUrlChange = (engine) => (url) => {
     setEngineUrls((prev) => ({ ...prev, [engine]: url }));
   };
 
-  // Callback to update a specific engine's title.
+
   const handleTitleChange = (engine) => (title) => {
     setEngineTitles((prev) => ({ ...prev, [engine]: title }));
   };

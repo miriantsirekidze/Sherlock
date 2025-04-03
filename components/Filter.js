@@ -1,90 +1,271 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Modal } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import ContainerItem from './ContainerItem';
 import DatePicker from 'react-native-date-picker';
 import DropDownItem from './DropDownItem';
 import { countryData } from '../data/country';
-import { languageData } from '../data/language'
+import { languageData } from '../data/language';
+import { Feather } from '@expo/vector-icons';
+import store$ from '../state';
 
 const Filter = () => {
-  const [url, setUrl] = useState('https://www.google.com/searchbyimage?image_url=${url}&client=firefox-b-d');
+  const [filters, setFilters] = useState({
+    keyword: null,
+    website: null,
+    domain: null,
+    removeWebsite: null,
+    removeDomain: null,
+    language: null,
+    country: null,
+    beforeDate: null,
+    afterDate: null,
+  });
+
+  const [selectedContainer, setSelectedContainer] = useState(null);
+
+  useEffect(() => {
+    const storedFilters = store$.imagesParameters.get();
+    setFilters({
+      keyword: storedFilters.keyword,
+      website: storedFilters.website,
+      domain: storedFilters.domain,
+      removeWebsite: storedFilters.removeWebsite,
+      removeDomain: storedFilters.removeDomain,
+      language: storedFilters.language,
+      country: storedFilters.country,
+      beforeDate: storedFilters.beforeDate,
+      afterDate: storedFilters.afterDate,
+    });
+  }, []);
+
+  const updateParameter = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    store$.addParameter(key, value);
+  };
+
+  const updateContainerValue = (key, value) => {
+    updateParameter(key, value);
+    if (value && !selectedContainer) {
+      setSelectedContainer(key);
+    } else if (value === null && selectedContainer === key) {
+      setSelectedContainer(null);
+    }
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      keyword: null,
+      website: null,
+      domain: null,
+      removeWebsite: null,
+      removeDomain: null,
+      language: null,
+      country: null,
+      beforeDate: null,
+      afterDate: null,
+    });
+    setSelectedContainer(null);
+  };
+
   const [toggleAlert, setToggleAlert] = useState(false);
-  const [openBefore, setOpenBefore] = useState(false);
-  const [openAfter, setOpenAfter] = useState(false);
   const [alertText, setAlertText] = useState('');
   const [isFocus, setIsFocus] = useState(false);
 
-  const [keyword, setKeyword] = useState(null);
-  const [website, setWebsite] = useState(null);
-  const [domain, setDomain] = useState(null);
-  const [removeWebsite, setRemoveWebsite] = useState(null);
-  const [removeDomain, setRemoveDomain] = useState(null);
-  const [beforeDate, setBeforeDate] = useState(null);
-  const [afterDate, setAfterDate] = useState(null);
-  const [language, setLanguage] = useState(null);
-  const [country, setCountry] = useState(null);
 
-  const clearFilters = () => {
-    setKeyword(null);
-    setWebsite(null);
-    setDomain(null);
-    setRemoveWebsite(null);
-    setRemoveDomain(null);
-    setBeforeDate(null);
-    setAfterDate(null);
-    setLanguage(null);
-    setCountry(null);
+  const formatDate = (dateVal) => {
+    const d = new Date(dateVal);
+    let month = d.toLocaleString('en-US', { month: 'short' });
+    if (!month.endsWith('.')) {
+      month = month + '.';
+    }
+    const day = d.getDate();
+    const year = d.getFullYear();
+    return `${month} ${day}, ${year}`;
   };
 
-  const CustomAlert = () => {
-    return (
-      <Modal
-        transparent={true}
-        visible={toggleAlert}
-        animationType='fade'
-        onRequestClose={() => setToggleAlert(false)}
-      >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-          <View style={{ alignItems: 'center', justifyContent: 'space-between', height: '100%', backgroundColor: '#333', borderRadius: 10, width: '70%', height: 'auto' }}>
+  const tagPrefixes = {
+    keyword: 'Keyword: ',
+    website: '+Website: ',
+    domain: '+Domain: ',
+    removeWebsite: '-Website: ',
+    removeDomain: '-Domain: ',
+    language: 'Language: ',
+    country: 'Country: ',
+    beforeDate: 'Before: ',
+    afterDate: 'After: ',
+  };
 
-            <Text style={{ color: 'white', padding: 20, letterSpacing: 0.5 }}>{alertText}</Text>
-            <View style={{ width: '100%' }}>
-              <View style={{ width: '100%', height: 1, backgroundColor: '#666' }} />
-              <TouchableOpacity onPress={() => setToggleAlert(false)} style={{ marginVertical: 10 }}>
-                <Text style={{ color: 'white', textAlign: 'center' }}>Close</Text>
-              </TouchableOpacity>
-            </View>
+  const CustomAlert = () => (
+    <Modal
+      transparent={true}
+      visible={toggleAlert}
+      animationType="fade"
+      onRequestClose={() => setToggleAlert(false)}
+    >
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <View style={{ alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#333', borderRadius: 10, width: '70%', padding: 20 }}>
+          <Text style={{ color: 'white', letterSpacing: 0.5 }}>{alertText}</Text>
+          <View style={{ width: '100%' }}>
+            <View style={{ width: '100%', height: 1, backgroundColor: '#666', marginVertical: 10 }} />
+            <TouchableOpacity onPress={() => setToggleAlert(false)}>
+              <Text style={{ color: 'white', textAlign: 'center' }}>Close</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+      </View>
+    </Modal>
+  );
+
+  const TimeFilter = () => {
+    const [tempBefore, setTempBefore] = useState(filters.beforeDate);
+    const [tempAfter, setTempAfter] = useState(filters.afterDate);
+    const [localOpenBefore, setLocalOpenBefore] = useState(false);
+    const [localOpenAfter, setLocalOpenAfter] = useState(false);
+
+    return (
+      <View style={styles.container}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.text}>Results before or after certain date.</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setAlertText("This filter allows you to find images that were published or indexed before or after a specific date.");
+              setToggleAlert(true);
+            }}
+            style={{ marginRight: 10 }}
+          >
+            <MaterialCommunityIcons name="help" size={18} color="white" />
+          </TouchableOpacity>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {/* Before Date */}
+          <View style={[styles.inputContainer, { width: '44%' }]}>
+            <View style={[styles.textInput, { justifyContent: 'center' }]}>
+              <Text style={{ color: tempBefore ? '#EDEADE' : '#FFFFFF90' }}>
+                {tempBefore == null ? 'Before' : formatDate(tempBefore)}
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.clearIcon} onPress={() => setLocalOpenBefore(true)}>
+              <MaterialCommunityIcons name="calendar-month" size={24} color="white" />
+            </TouchableOpacity>
+            <DatePicker
+              modal
+              open={localOpenBefore}
+              date={tempBefore || new Date()}
+              mode="date"
+              maximumDate={new Date()}
+              onConfirm={(selectedDate) => {
+                setLocalOpenBefore(false);
+                setTempBefore(selectedDate);
+              }}
+              onCancel={() => setLocalOpenBefore(false)}
+            />
+          </View>
+          {/* After Date */}
+          <View style={[styles.inputContainer, { width: '44%', marginLeft: '2%' }]}>
+            <View style={[styles.textInput, { justifyContent: 'center' }]}>
+              <Text style={{ color: tempAfter ? '#EDEADE' : '#FFFFFF90' }}>
+                {tempAfter == null ? 'After' : formatDate(tempAfter)}
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.clearIcon} onPress={() => setLocalOpenAfter(true)}>
+              <MaterialCommunityIcons name="calendar-month" size={24} color="white" />
+            </TouchableOpacity>
+            <DatePicker
+              modal
+              open={localOpenAfter}
+              date={tempAfter || new Date()}
+              mode="date"
+              maximumDate={new Date()}
+              onConfirm={(selectedDate) => {
+                setLocalOpenAfter(false);
+                setTempAfter(selectedDate);
+              }}
+              onCancel={() => setLocalOpenAfter(false)}
+            />
+          </View>
+          {(((tempBefore !== null && tempBefore !== filters.beforeDate) ||
+            (tempAfter !== null && tempAfter !== filters.afterDate))) && (
+              <TouchableOpacity
+                style={[styles.checkIcon, { marginLeft: 'auto' }]}
+                onPress={() => {
+                  if (tempBefore) updateParameter("beforeDate", tempBefore);
+                  if (tempAfter) updateParameter("afterDate", tempAfter);
+                }}
+              >
+                <MaterialCommunityIcons name="check" size={24} color="black" />
+              </TouchableOpacity>
+            )}
+        </View>
+      </View>
     );
   };
+
 
   return (
     <View>
       <CustomAlert />
+
+      <View style={{ alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', marginVertical: 10 }}>
+        {Object.entries(filters).map(([key, value]) => {
+          if (!value) return null;
+          let displayValue = value;
+          if (key === 'beforeDate' || key === 'afterDate') {
+            displayValue = formatDate(value);
+          }
+          if (key === 'language') {
+            const found = languageData.find(item => item.code === value);
+            if (found) {
+              displayValue = found.key;
+            }
+          }
+          if (key === 'country') {
+            const found = countryData.find(item => item.code === value);
+            if (found) {
+              displayValue = found.key;
+            }
+          }
+          const prefix = tagPrefixes[key] || '';
+          let fullText = prefix + displayValue;
+          if (typeof fullText === 'string' && fullText.length > 20 && key === 'keyword') {
+            fullText = fullText.substring(0, 20) + '..';
+          }
+          return (
+            <TouchableOpacity
+              key={key}
+              style={{ flexDirection: 'row', padding: 5, paddingHorizontal: 15, borderRadius: 30, borderWidth: 1, borderColor: 'white', alignItems: 'center', margin: 5 }}
+              onPress={() => updateParameter(key, null)}
+            >
+              <Feather name='x' size={18} color={'white'} />
+              <Text style={{ marginLeft: 5, fontSize: 12, color: 'white' }}>{fullText}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>Filters for Google Images</Text>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>Google Image Search filters</Text>
           <Image source={require('../assets/icons/google.png')} style={{ height: 24, width: 24, marginLeft: 10 }} />
         </View>
         <TouchableOpacity onPress={clearFilters} style={{ marginLeft: 'auto' }}>
           <Text style={{ color: '#FFFFFF90', fontSize: 16, fontWeight: 'bold' }}>Reset</Text>
         </TouchableOpacity>
       </View>
-      <View style={{ justifyContent: 'space-between', marginVertical: 10 }}>
-      <DropDownItem
+
+      <View style={{ justifyContent: 'space-between', marginVertical: 5 }}>
+        <DropDownItem
           text={"Try to get webpages that are in certain language"}
           placeholder={'Danish'}
           icon="language-outline"
-          value={language}
+          value={filters.language}
           isFocus={isFocus}
           data={languageData}
-          setValue={setLanguage}
+          setValue={(val) => updateParameter('language', val)}
           setIsFocus={setIsFocus}
+          onSubmit={(value) => updateParameter('language', value)}
           customAlert={() => {
-            setAlertText("This filter allows you to find images from webpages written in a specific language. For example, choosing Danish will return results from pages in Danish. This is helpful when you're looking for content in a particular language. Note that some of the languages are missing because Google doesn't support them.");
+            setAlertText("This filter allows you to find images from webpages written in a specific language. For example, choosing Danish returns results from pages in Danish.");
             setToggleAlert(true);
           }}
         />
@@ -92,122 +273,80 @@ const Filter = () => {
           text={"Try to get webpages from certain country"}
           icon="earth-outline"
           placeholder={'Georgia'}
-          value={country}
+          value={filters.country}
           isFocus={isFocus}
           data={countryData}
           setIsFocus={setIsFocus}
-          setValue={setCountry}
+          setValue={(val) => updateParameter('country', val)}
+          onSubmit={(value) => updateParameter('country', value)}
           customAlert={() => {
-            setAlertText("Use this filter to find images from webpages associated with a specific country or region. Choosing Georgia, for example, will return results from Georgia. This could be useful for finding region-specific content or perspectives.");
+            setAlertText("Use this filter to find images from webpages associated with a specific country or region. For example, choosing Georgia returns results from Georgia.");
             setToggleAlert(true);
           }}
         />
+        <TimeFilter />
+        <Text style={{ color: 'white', fontSize: 15, fontWeight: '500', marginTop: 10 }}>Only one parameter can be picked from below.</Text>
+        <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 5 }}>Due to Google Image Search restrictions, only one parameter at a time can be applied from the parameters below. <Text style={{fontWeight: '700'}}>Values are case insensitive</Text></Text>
         <ContainerItem
           text="Search for a keyword or a sentence."
-          placeholder={"cat"}
-          value={keyword}
-          onChangeText={setKeyword}
+          placeholder={"Cat"}
+          value={filters.keyword}
+          onChangeText={(val) => updateContainerValue('keyword', val)}
+          onSubmit={(value) => updateContainerValue('keyword', value)}
           customAlert={() => {
-            setAlertText("Use this filter to search for specific keywords or phrases within Google Images. For example, searching for 'cat' will return webpages with word 'cat' in them. This is useful when you're looking for something specific and want to narrow down your results.");
+            setAlertText("Use this filter to search for specific keywords or phrases within Google Images. For example, searching for 'cat' returns webpages with the word 'cat'.");
             setToggleAlert(true);
           }}
+          editable={selectedContainer === null || selectedContainer === 'keyword'}
         />
         <ContainerItem
           text="Find results from specific website."
-          placeholder={"facebook.com"}
-          value={website}
-          onChangeText={setWebsite}
+          placeholder={"Facebook.com"}
+          value={filters.website}
+          onChangeText={(val) => updateContainerValue('website', val)}
+          onSubmit={(value) => updateContainerValue('website', value)}
           customAlert={() => {
-            setAlertText("This filter allows you to restrict your search results to images from a particular website. For example, using 'facebook.com' will show only images hosted on Facebook. This is helpful when you know the source of the content you're looking for.");
+            setAlertText("This filter restricts your search results to images from a particular website. For example, using 'facebook.com' shows only images from Facebook.");
             setToggleAlert(true);
           }}
+          editable={selectedContainer === null || selectedContainer === 'website'}
         />
         <ContainerItem
           text="Get results only from specific domain extension."
           placeholder={".com"}
-          value={domain}
-          onChangeText={setDomain}
+          value={filters.domain}
+          onChangeText={(val) => updateContainerValue('domain', val)}
+          onSubmit={(value) => updateContainerValue('domain', value)}
           customAlert={() => {
-            setAlertText("Use this filter to find images from websites with a specific domain extension, such as .com, .org, or .edu. For example, '.com' will return results only from websites ending with .com. This is useful for targeting content from specific types of organizations or regions.");
+            setAlertText("This filter finds images from websites with a specific domain extension, such as .com, .org, or .edu.");
             setToggleAlert(true);
           }}
+          editable={selectedContainer === null || selectedContainer === 'domain'}
         />
         <ContainerItem
           text="Remove specific website from the results."
-          placeholder={"instagram.com"}
-          value={removeWebsite}
-          onChangeText={setRemoveWebsite}
+          placeholder={"Instagram.com"}
+          value={filters.removeWebsite}
+          onChangeText={(val) => updateContainerValue('removeWebsite', val)}
+          onSubmit={(value) => updateContainerValue('removeWebsite', value)}
           customAlert={() => {
-            setAlertText("This filter lets you exclude images from a particular website. For example, using 'instagram.com' will remove all results from Instagram. This is helpful when you want to avoid certain sources in your search results.");
+            setAlertText("This filter excludes images from a particular website. For example, using 'instagram.com' will remove results from Instagram.");
             setToggleAlert(true);
           }}
+          editable={selectedContainer === null || selectedContainer === 'removeWebsite'}
         />
         <ContainerItem
           text="Remove a specific domain extension from results."
           placeholder={".org"}
-          value={removeDomain}
-          onChangeText={setRemoveDomain}
+          value={filters.removeDomain}
+          onChangeText={(val) => updateContainerValue('removeDomain', val)}
+          onSubmit={(value) => updateContainerValue('removeDomain', value)}
           customAlert={() => {
-            setAlertText("Use this filter to exclude images from websites with a specific domain extension. For example, '.org' will remove all results from .org websites. This is useful when you want to focus on results from other types of domains, such as .org or .gov.");
+            setAlertText("This filter excludes images from websites with a specific domain extension, like .org.");
             setToggleAlert(true);
           }}
+          editable={selectedContainer === null || selectedContainer === 'removeDomain'}
         />
-        <View style={styles.container}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.text}>Results before or after certain date.</Text>
-            <TouchableOpacity onPress={() => {
-              setAlertText("This filter allows you to find images that were published or indexed before or after a specific date. For example, before:2025-01-01 will show results from before January 1, 2025, and after:2025-01-01 will show results after January 1, 2025. This is could be helpful for finding older or historical content. Also, you can use either 'before', 'after' or both filters at once.");
-              setToggleAlert(true);
-            }} style={{ marginRight: 10 }}>
-              <MaterialCommunityIcons name="help" size={18} color="white" />
-            </TouchableOpacity>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-            <View style={[styles.inputContainer, { width: '44%' }]}>
-              <View style={[styles.textInput, { justifyContent: 'center' }]}>
-                <Text style={{ color: beforeDate ? '#EDEADE' : '#FFFFFF90' }}>{beforeDate == null ? 'before' : beforeDate.toISOString().split('T')[0]}</Text>
-              </View>
-              <TouchableOpacity style={styles.clearIcon} onPress={() => setOpenBefore(true)}>
-                <MaterialCommunityIcons name="calendar-month" size={24} color="white" />
-              </TouchableOpacity>
-              <DatePicker
-                modal
-                open={openBefore}
-                date={beforeDate || new Date()}
-                mode='date'
-                onConfirm={(selectedDate) => {
-                  setOpenBefore(false);
-                  setBeforeDate(selectedDate);
-                }}
-                onCancel={() => setOpenBefore(false)}
-              />
-            </View>
-            <View style={[styles.inputContainer, { width: '44%', marginLeft: '2%' }]}>
-              <View style={[styles.textInput, { justifyContent: 'center' }]}>
-                <Text style={{ color: afterDate ? '#EDEADE' : '#FFFFFF90' }}>{afterDate == null ? 'after' : afterDate.toISOString().split('T')[0]}</Text>
-              </View>
-              <TouchableOpacity style={styles.clearIcon} onPress={() => setOpenAfter(true)}>
-                <MaterialCommunityIcons name="calendar-month" size={24} color="white" />
-              </TouchableOpacity>
-              <DatePicker
-                modal
-                open={openAfter}
-                date={afterDate || new Date()}
-                mode='date'
-                onConfirm={(selectedDate) => {
-                  setOpenAfter(false);
-                  setAfterDate(selectedDate);
-                }}
-                onCancel={() => setOpenAfter(false)}
-              />
-            </View>
-            {(beforeDate !== null || afterDate !== null) && (
-              <TouchableOpacity style={[styles.checkIcon, { marginLeft: 'auto' }]}>
-                <MaterialCommunityIcons name="check" size={24} color="black" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
       </View>
     </View>
   );
@@ -219,7 +358,7 @@ const styles = StyleSheet.create({
   text: {
     color: 'white',
     fontSize: 14,
-    flexShrink: 1
+    flexShrink: 1,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -231,7 +370,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginTop: 10,
     position: 'relative',
-    elevation: 5
+    elevation: 5,
   },
   textInput: {
     flex: 1,
@@ -244,13 +383,13 @@ const styles = StyleSheet.create({
     right: 10,
   },
   container: {
-    marginVertical: 5,
     width: '100%',
     padding: 15,
     backgroundColor: '#444',
     borderRadius: 20,
     elevation: 8,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    marginVertical: 5,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -265,5 +404,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 10,
-  }
+  },
 });
