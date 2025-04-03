@@ -47,10 +47,10 @@ const store$ = observable({
       filterArray.push(`*+-site:${params.removeDomain}`);
     }
     if (params.language) {
-      filterArray.push(`lr:${params.language}`);
+      filterArray.push(`lr=${params.language}`);
     }
     if (params.country) {
-      filterArray.push(`cr:Country${params.country}`);
+      filterArray.push(`cr=Country${params.country}`);
     }
     if (params.beforeDate) {
       const d = new Date(params.beforeDate);

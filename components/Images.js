@@ -32,7 +32,7 @@ const Images = ({ url, onUrlChange, onTitleChange }) => {
     return `${baseUrl}${filters}`;
   };
   
-  const baseUrl = `https://www.google.com/searchbyimage?image_url=${encodedUrl}&client=firefox-b-d`;
+  const baseUrl = `https://www.google.com/searchbyimage?image_url=${encodedUrl}&client=firefox-b-d'`;
   const finalUrl = buildFinalURL(baseUrl);
   console.log(finalUrl)
   

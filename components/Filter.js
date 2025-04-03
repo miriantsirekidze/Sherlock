@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, Modal } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import ContainerItem from './ContainerItem';
@@ -22,8 +22,6 @@ const Filter = () => {
     afterDate: null,
   });
 
-  const [selectedContainer, setSelectedContainer] = useState(null);
-
   useEffect(() => {
     const storedFilters = store$.imagesParameters.get();
     setFilters({
@@ -39,39 +37,38 @@ const Filter = () => {
     });
   }, []);
 
-  const updateParameter = (key, value) => {
+  // Use a stable updateParameter that reads the current value from the store.
+  const updateParameter = useCallback((key, value) => {
+    const currentValue = store$.imagesParameters.get()[key];
+    if (currentValue === value) return; // Do nothing if the value is unchanged.
     setFilters(prev => ({ ...prev, [key]: value }));
-    store$.addParameter(key, value);
-  };
+    if (value) {
+      store$.addParameter(key, value);
+    } else {
+      store$.imagesParameters[key].set(null);
+      console.log(`Cleared parameter [${key}]`);
+    }
+  }, []); // empty dependency array makes this stable across renders
 
   const updateContainerValue = (key, value) => {
     updateParameter(key, value);
-    if (value && !selectedContainer) {
-      setSelectedContainer(key);
-    } else if (value === null && selectedContainer === key) {
-      setSelectedContainer(null);
-    }
   };
 
   const clearFilters = () => {
-    setFilters({
-      keyword: null,
-      website: null,
-      domain: null,
-      removeWebsite: null,
-      removeDomain: null,
-      language: null,
-      country: null,
-      beforeDate: null,
-      afterDate: null,
-    });
-    setSelectedContainer(null);
+    updateParameter('keyword', null);
+    updateParameter('website', null);
+    updateParameter('domain', null);
+    updateParameter('removeWebsite', null);
+    updateParameter('removeDomain', null);
+    updateParameter('language', null);
+    updateParameter('country', null);
+    updateParameter('beforeDate', null);
+    updateParameter('afterDate', null);
   };
 
   const [toggleAlert, setToggleAlert] = useState(false);
   const [alertText, setAlertText] = useState('');
   const [isFocus, setIsFocus] = useState(false);
-
 
   const formatDate = (dateVal) => {
     const d = new Date(dateVal);
@@ -138,7 +135,6 @@ const Filter = () => {
           </TouchableOpacity>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {/* Before Date */}
           <View style={[styles.inputContainer, { width: '44%' }]}>
             <View style={[styles.textInput, { justifyContent: 'center' }]}>
               <Text style={{ color: tempBefore ? '#EDEADE' : '#FFFFFF90' }}>
@@ -161,7 +157,6 @@ const Filter = () => {
               onCancel={() => setLocalOpenBefore(false)}
             />
           </View>
-          {/* After Date */}
           <View style={[styles.inputContainer, { width: '44%', marginLeft: '2%' }]}>
             <View style={[styles.textInput, { justifyContent: 'center' }]}>
               <Text style={{ color: tempAfter ? '#EDEADE' : '#FFFFFF90' }}>
@@ -201,6 +196,10 @@ const Filter = () => {
     );
   };
 
+  const containerKeys = ['keyword', 'website', 'domain', 'removeWebsite', 'removeDomain'];
+  const activeContainer = useMemo(() => {
+    return containerKeys.find(key => filters[key] !== null) || null;
+  }, [filters]);
 
   return (
     <View>
@@ -286,7 +285,10 @@ const Filter = () => {
         />
         <TimeFilter />
         <Text style={{ color: 'white', fontSize: 15, fontWeight: '500', marginTop: 10 }}>Only one parameter can be picked from below.</Text>
-        <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 5 }}>Due to Google Image Search restrictions, only one parameter at a time can be applied from the parameters below. <Text style={{fontWeight: '700'}}>Values are case insensitive</Text></Text>
+        <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 5 }}>
+          Due to Google Image Search restrictions, only one parameter at a time can be applied from the parameters below.
+          <Text style={{ fontWeight: '700' }}> Values are case insensitive</Text>
+        </Text>
         <ContainerItem
           text="Search for a keyword or a sentence."
           placeholder={"Cat"}
@@ -297,7 +299,7 @@ const Filter = () => {
             setAlertText("Use this filter to search for specific keywords or phrases within Google Images. For example, searching for 'cat' returns webpages with the word 'cat'.");
             setToggleAlert(true);
           }}
-          editable={selectedContainer === null || selectedContainer === 'keyword'}
+          editable={activeContainer === null || activeContainer === 'keyword'}
         />
         <ContainerItem
           text="Find results from specific website."
@@ -309,7 +311,7 @@ const Filter = () => {
             setAlertText("This filter restricts your search results to images from a particular website. For example, using 'facebook.com' shows only images from Facebook.");
             setToggleAlert(true);
           }}
-          editable={selectedContainer === null || selectedContainer === 'website'}
+          editable={activeContainer === null || activeContainer === 'website'}
         />
         <ContainerItem
           text="Get results only from specific domain extension."
@@ -321,7 +323,7 @@ const Filter = () => {
             setAlertText("This filter finds images from websites with a specific domain extension, such as .com, .org, or .edu.");
             setToggleAlert(true);
           }}
-          editable={selectedContainer === null || selectedContainer === 'domain'}
+          editable={activeContainer === null || activeContainer === 'domain'}
         />
         <ContainerItem
           text="Remove specific website from the results."
@@ -333,7 +335,7 @@ const Filter = () => {
             setAlertText("This filter excludes images from a particular website. For example, using 'instagram.com' will remove results from Instagram.");
             setToggleAlert(true);
           }}
-          editable={selectedContainer === null || selectedContainer === 'removeWebsite'}
+          editable={activeContainer === null || activeContainer === 'removeWebsite'}
         />
         <ContainerItem
           text="Remove a specific domain extension from results."
@@ -345,7 +347,7 @@ const Filter = () => {
             setAlertText("This filter excludes images from websites with a specific domain extension, like .org.");
             setToggleAlert(true);
           }}
-          editable={selectedContainer === null || selectedContainer === 'removeDomain'}
+          editable={activeContainer === null || activeContainer === 'removeDomain'}
         />
       </View>
     </View>
