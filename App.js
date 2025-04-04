@@ -8,8 +8,11 @@ import Saved from './screens/Saved';
 import Settings from './screens/Settings';
 import WebViewScreen from './screens/WebViewScreen';
 
+import useCleanOldFiles from './deletion';
+
 
 export default function App() {
+  useCleanOldFiles();
 
   const RootStack = createNativeStackNavigator({
     screens: {

@@ -26,7 +26,9 @@ import ArticleItem from '../components/ArticleItem';
 import { articles } from '../data/articles';
 import { KEY } from '@env';
 
+
 const HomeScreen = () => {
+  
   NavigationBar.setBackgroundColorAsync('#333');
 
   const [image, setImage] = useState(null);
@@ -39,7 +41,6 @@ const HomeScreen = () => {
 
   const navigation = useNavigation();
 
-  // Validate URL (using HEAD request)
   async function validateUrl(url) {
     if (!url || !url.trim()) return false;
     try {
