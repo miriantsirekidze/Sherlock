@@ -26,46 +26,46 @@ const store$ = observable({
     store$.imagesParameters[key].set(value);
     console.log(`Added parameter [${key}]:`, value);
   },
-  
+
   getFilterString() {
     const params = store$.imagesParameters.get();
-    const filterArray = [];
-    
-    if (params.keyword) {
-      filterArray.push(`'${params.keyword}'`);
-    }
-    if (params.website) {
-      filterArray.push(`site:${params.website}`);
-    }
-    if (params.domain) {
-      filterArray.push(`site:${params.domain}`);
-    }
-    if (params.removeWebsite) {
-      filterArray.push(`*+-site:${params.removeWebsite}`);
-    }
-    if (params.removeDomain) {
-      filterArray.push(`*+-site:${params.removeDomain}`);
-    }
-    if (params.language) {
-      filterArray.push(`lr=${params.language}`);
-    }
-    if (params.country) {
-      filterArray.push(`cr=Country${params.country}`);
+    const qParts = [];
+
+    if (params.afterDate) {
+      const afterDate = new Date(params.afterDate).toISOString().split('T')[0];
+      qParts.push(`after:${afterDate}`);
     }
     if (params.beforeDate) {
-      const d = new Date(params.beforeDate);
-      filterArray.push(`before:${d.toISOString().split('T')[0]}`);
-    }
-    if (params.afterDate) {
-      const d = new Date(params.afterDate);
-      filterArray.push(`after:${d.toISOString().split('T')[0]}`);
+      const beforeDate = new Date(params.beforeDate).toISOString().split('T')[0];
+      qParts.push(`before:${beforeDate}`);
     }
 
-    if (filterArray.length === 0) return "";
+    if (params.keyword) {
+      qParts.push(`'${params.keyword}'`);
+    } else if (params.website) {
+      qParts.push(`site:${params.website}`);
+    } else if (params.domain) {
+      qParts.push(`site:${params.domain}`);
+    } else if (params.removeWebsite) {
+      qParts.push(`*+-site:${params.removeWebsite}`);
+    } else if (params.removeDomain) {
+      qParts.push(`*+-site:${params.removeDomain}`);
+    }
 
-    const firstFilter = `&q=${filterArray[0]}`;
-    const additionalFilters = filterArray.slice(1).map(f => `&${f}`).join('');
-    return firstFilter + additionalFilters;
+    let qString = "";
+    if (qParts.length > 0) {
+      qString = "&q=" + qParts.join("%20");
+    }
+
+    let extra = "";
+    if (params.language) {
+      extra += `&lr=lang_${params.language}`;
+    }
+    if (params.country) {
+      extra += `&cr=Country${params.country}`;
+    }
+
+    return qString + extra;
   },
 
   addUrl(url, title) {
