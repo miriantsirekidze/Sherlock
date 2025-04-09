@@ -52,7 +52,6 @@ const Images = ({ url, onUrlChange, onTitleChange }) => {
     setCanGoBack(state.canGoBack);
     if (onUrlChange) onUrlChange(state.url);
 
-    // Inject JavaScript to extract the page title
     webViewRef.current?.injectJavaScript(`
       (function() {
         const title = document.title;

@@ -56,10 +56,14 @@ const Picarta = ({ url }) => {
 
 
   const handleLoad = () => {
-    if (webViewRef.current) {
-      if (url) {
-        webViewRef.current.injectJavaScript(injectionScriptURLFlow);
+    try {
+      if (webViewRef.current) {
+        if (url) {
+          webViewRef.current.injectJavaScript(injectionScriptURLFlow);
+        }
       }
+    } catch (err) {
+      
     }
   };
 

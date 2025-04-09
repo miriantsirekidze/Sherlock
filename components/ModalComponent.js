@@ -70,7 +70,7 @@ const ModalComponent = ({ visible, onClose, isUrl }) => {
             <Animated.View style={[styles.underline, animatedUnderlineStyle]} />
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false} overScrollMode='never'>
             <View style={styles.content}>
               {activeTab === 'optional' ? (
                 <Animated.View key="optional" entering={FadeIn.duration(300)} exiting={FadeOut.duration(300)}>

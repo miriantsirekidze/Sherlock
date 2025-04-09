@@ -46,14 +46,19 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
       onUrlChange(state.url);
     }
 
-    // Inject JavaScript to extract the page title
-    webViewRef.current?.injectJavaScript(`
-      (function() {
-        const title = document.title;
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
-      })();
-      true; // Required for JavaScript to execute correctly
-    `);
+    try {
+      if (webViewRef.current) {
+        webViewRef.current?.injectJavaScript(`
+          (function() {
+            const title = document.title;
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
+          })();
+          true; // Required for JavaScript to execute correctly
+        `);
+      }
+    } catch (err) {
+
+    }
   };
 
   useEffect(() => {
@@ -75,10 +80,8 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
 
   const injectionScriptClickButton = `
     (function() {
-      // If already clicked, exit early.
       if (sessionStorage.getItem('UPLOAD_BUTTON_CLICKED')) return;
       
-      // Use MutationObserver to watch for the upload button.
       const observer = new MutationObserver(() => {
         const button = document.querySelector('button.upload[aria-label="Upload photo"]');
         if (button && getComputedStyle(button).display !== 'none' && button.offsetParent !== null) {
@@ -90,7 +93,6 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
       });
       observer.observe(document.body, { childList: true, subtree: true });
       
-      // Also check manually every 100ms (max 50 attempts = 5 seconds)
       let attempts = 0;
       const interval = setInterval(() => {
         attempts++;
@@ -111,7 +113,6 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
     if (!base64Data) return '';
     return `
       (function() {
-        // If already injected, exit early.
         if (sessionStorage.getItem('FILE_INPUT_INJECTED')) return;
         const fileInput = document.querySelector('.upload-file input#file-input');
         if (fileInput) {
@@ -142,13 +143,10 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
     `;
   };
 
-  // Updated injection script for checking permissions and clicking search
   const injectionScriptSearchClick = `
     (function() {
-      // If already clicked, exit early.
       if (sessionStorage.getItem('SEARCH_CLICKED')) return;
       
-      // Check for permissions checkboxes and click them if found.
       const permissionsCheckboxes = document.querySelectorAll('.permissions input[type="checkbox"]');
       if (permissionsCheckboxes && permissionsCheckboxes.length > 0) {
         permissionsCheckboxes.forEach(function(checkbox) {
@@ -161,7 +159,6 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
         window.ReactNativeWebView.postMessage('PERMISSIONS_CHECKED: Permissions checkboxes checked');
       }
       
-      // Then attempt to click the search button.
       const searchButton = document.querySelector('.start-search-inner > button');
       if (searchButton && !searchButton.classList.contains('disabled')) {
         searchButton.click();
@@ -175,30 +172,34 @@ export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
   `;
 
   const handleLoadStart = () => {
-    if (webViewRef.current) {
-      webViewRef.current.injectJavaScript(injectionScriptClickButton);
-      setTimeout(() => {
-        if (webViewRef.current) {
-          webViewRef.current.injectJavaScript(generateFileInputInjectionScript());
-        }
-      }, 1000);
-      setTimeout(() => {
-        if (webViewRef.current && isFullPimeyes) {
-          webViewRef.current.injectJavaScript(injectionScriptSearchClick);
-        }
-      }, 2000);
+    try {
+      if (webViewRef.current) {
+        webViewRef.current.injectJavaScript(injectionScriptClickButton);
+        setTimeout(() => {
+          if (webViewRef.current) {
+            webViewRef.current.injectJavaScript(generateFileInputInjectionScript());
+          }
+        }, 1000);
+        setTimeout(() => {
+          if (webViewRef.current && isFullPimeyes) {
+            webViewRef.current.injectJavaScript(injectionScriptSearchClick);
+          }
+        }, 2000);
+      }
+    } catch (err) {
+
     }
   };
 
   return (
-      <WebView
-        ref={webViewRef}
-        source={{ uri: 'https://pimeyes.com' }}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        onLoadStart={handleLoadStart}
-        onNavigationStateChange={handleNavigationStateChange}
-        onMessage={handleMessage}
-      />
+    <WebView
+      ref={webViewRef}
+      source={{ uri: 'https://pimeyes.com' }}
+      javaScriptEnabled={true}
+      domStorageEnabled={true}
+      onLoadStart={handleLoadStart}
+      onNavigationStateChange={handleNavigationStateChange}
+      onMessage={handleMessage}
+    />
   );
 }

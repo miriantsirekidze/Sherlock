@@ -1,10 +1,12 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import WebView from 'react-native-webview';
 import { BackHandler, Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import store$ from '../state';
 
 const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
   const webViewRef = useRef(null);
+  const navigation = useNavigation();
   const [canGoBack, setCanGoBack] = useState(false);
 
   const onAndroidBackPress = useCallback(() => {
@@ -85,10 +87,8 @@ const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
       });
     };
 
-    // Run immediately
     removeAds();
 
-    // Set up mutation observer
     var observer = new MutationObserver(function(mutations) {
       mutations.forEach(function(mutation) {
         removeAds();
@@ -205,13 +205,14 @@ const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
 
   const handleMessage = (event) => {
     const rawData = event.nativeEvent.data;
-    
     try {
       const message = JSON.parse(rawData);
-      
       if (message.type === "title" && message.title && onTitleChange) {
         onTitleChange('Copyseeker');
         return;
+      }
+      if (message.type === 'external' && message.url) {
+        navigation.navigate('WebViewScreen', { url: message.url });
       }
     } catch (error) {
     }
@@ -220,19 +221,25 @@ const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
   const handleNavigationStateChange = (state) => {
     store$.currentUrl.set(state.url);
     setCanGoBack(state.canGoBack);
-     
+
     if (onUrlChange) {
       const uniqueSuffix = '/#' + Math.random().toString(36).substring(2, 8);
       onUrlChange(state.url + uniqueSuffix);
     }
 
-    webViewRef.current?.injectJavaScript(`
-      (function() {
-        const title = 'Copyseeker';
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
-      })();
-      true;
-    `);
+    try {
+      if(webViewRef.current) {
+        webViewRef.current?.injectJavaScript(`
+          (function() {
+            const title = 'Copyseeker';
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
+          })();
+          true;
+        `);
+      }
+    } catch (err) {
+
+    }
   };
 
   return (
@@ -240,11 +247,48 @@ const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
       ref={webViewRef}
       javaScriptEnabled={true}
       domStorageEnabled={true}
+      onShouldStartLoadWithRequest={(request) => {
+        if (request.navigationType === 'click' && !request.url.startsWith('https://copyseeker.net')) {
+          navigation.navigate('WebViewScreen', { url: request.url });
+          return false;
+        }
+        return true;
+      }}
+      injectedJavaScriptBeforeContentLoaded={`
+        (function() {
+          window.open = function(url) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'external', url }));
+          };
+          
+          document.addEventListener('click', function(event) {
+            var anchor = event.target.closest('a');
+            if (anchor && anchor.target === '_blank' && anchor.href) {
+              event.preventDefault();
+              window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'external', url: anchor.href }));
+            }
+          }, true);
+        })();
+        true;
+      `}
       onLoadEnd={() => {
-        webViewRef.current.injectJavaScript(injectionAdBlock);
+
+        try {
+          if (webViewRef.current) {
+            webViewRef.current.injectJavaScript(injectionAdBlock);
+          }
+        } catch (err) {
+
+        }
+
         if (url) {
           setTimeout(() => {
-            webViewRef.current.injectJavaScript(getURLInjectionScript());
+            try {
+              if(webViewRef.current) {
+                webViewRef.current.injectJavaScript(getURLInjectionScript());
+              }
+            } catch (err) {
+
+            }
           }, 1000);
         }
       }}
