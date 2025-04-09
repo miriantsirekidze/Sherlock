@@ -24,9 +24,9 @@ const WebViewScreen = ({ route }) => {
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
-      return true; // Prevent default back behavior
+      return true;
     }
-    return false; // Allow default behavior (go back to the previous screen)
+    return false;
   }, [canGoBack]);
 
   useEffect(() => {
@@ -41,7 +41,6 @@ const WebViewScreen = ({ route }) => {
   const handleNavigationStateChange = (state) => {
     setCanGoBack(state.canGoBack);
 
-    // Inject JavaScript to get the page title
     webViewRef.current?.injectJavaScript(`
       (function() {
         const title = document.title;

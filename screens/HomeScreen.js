@@ -161,7 +161,7 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} overScrollMode='never' >
         <View style={styles.searchSection}>
           {selection === null && (
             <View style={styles.buttonRow}>

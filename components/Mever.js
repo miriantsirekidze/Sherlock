@@ -101,13 +101,16 @@ export default function Mever({ url, onUrlChange, onTitleChange }) {
       onUrlChange(state.url);
     }
 
-    webViewRef.current?.injectJavaScript(`
-      (function() {
-        const title = document.title;
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
-      })();
-      true;
-    `);
+    try {
+      webViewRef.current?.injectJavaScript(`
+        (function() {
+          const title = document.title;
+          window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
+        })();
+        true;
+      `);
+    } catch (err) {
+    }
   };
 
   const { width, height } = Dimensions.get('window');
