@@ -283,7 +283,7 @@ const Filter = () => {
           }}
         />
         <ContainerItem
-          text="Search for a keyword or a sentence."
+          text="Search for a keyword or a sentence in page title or body text."
           placeholder={"Cat"}
           value={filters.keyword}
           onChangeText={(val) => updateContainerValue('keyword', val)}
