@@ -1,22 +1,20 @@
-import React, {useEffect} from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ToastAndroid, Image } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as SplashScreen from 'expo-splash-screen';
-import { useFonts } from 'expo-font';
-import { useSelector } from '@legendapp/state/react'; // Import useSelector hook
 import store$ from '../state';
-
-SplashScreen.preventAutoHideAsync();
-
-import { useNavigation } from '@react-navigation/native';
-
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useFonts } from 'expo-font';
+import { useSelector } from '@legendapp/state/react';
+import { useNavigation } from '@react-navigation/native';
+
+SplashScreen.preventAutoHideAsync();
 
 const SavedScreen = () => {
   const navigation = useNavigation();
 
-const [loaded, error] = useFonts({
+  const [loaded, error] = useFonts({
     'CaudexBold': require('../assets/fonts/CaudexBold.ttf'),
     'CaudexBoldItalic': require('../assets/fonts/CaudexBoldItalic.ttf'),
     'CaudexItalic': require('../assets/fonts/CaudexItalic.ttf'),
@@ -24,22 +22,51 @@ const [loaded, error] = useFonts({
   });
 
   useEffect(() => {
-      if (loaded || error) {
-        SplashScreen.hideAsync();
-      }
-    }, [loaded, error]);
-  
-    if (!loaded && !error) {
-      return null;
+    if (loaded || error) {
+      SplashScreen.hideAsync();
     }
+  }, [loaded, error]);
 
-  // Use useSelector to subscribe to changes in store$.urls
+  if (!loaded && !error) {
+    return null;
+  }
+
+  const [recent, setRecent] = useState(true);
+
   const urls = useSelector(() => store$.urls).map((item) => ({
-    id: item?.id || Date.now(), // Provide a fallback for id
-    title: item?.title || "Untitled", // Handle missing title
-    url: item?.url?.value || item?.url || "Invalid URL", // Safely extract url value
-    date: item?.date || "Unknown Date", // Provide a default date
+    id: item?.id || Date.now(),
+    title: item?.title || "Untitled",
+    url: item?.url?.value || item?.url || "Invalid URL",
+    date: item?.date || "Unknown Date",
   }));
+
+  const sortedUrls = useMemo(() => {
+    const copied = [...urls];
+    if (recent) {
+      copied.sort((a, b) => b.id - a.id);
+    } else {
+      copied.sort((a, b) => a.id - b.id);
+    }
+    return copied;
+  }, [urls, recent]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => setRecent((prev) => !prev)} style={{ marginRight: 10, flexDirection: 'row', alignItems: 'center' }}>
+          <MaterialCommunityIcons
+            name={recent ? 'sort-numeric-descending' : 'sort-numeric-ascending'}
+            size={15}
+            color="white"
+            style={{ marginRight: 5 }}
+          />
+          <Text style={{ color: 'white', fontSize: 14, fontWeight: '500' }}>
+            {recent ? 'Recent' : 'Oldest'}
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, recent]);
 
   const openBookmark = (url) => {
     if (url !== "Invalid URL") {
@@ -52,8 +79,10 @@ const [loaded, error] = useFonts({
   const handleDelete = (url) => {
     console.log("Attempting to delete URL:", url);
     const currentUrls = store$.urls.get();
-    const updatedUrls = currentUrls.filter((item) => item.url?.value !== url && item.url !== url);
-    store$.urls.set(updatedUrls); // Update the observable array
+    const updatedUrls = currentUrls.filter(
+      (item) => item.url?.value !== url && item.url !== url
+    );
+    store$.urls.set(updatedUrls);
   };
 
   const copyToClipboard = async (url) => {
@@ -68,23 +97,25 @@ const [loaded, error] = useFonts({
   const renderEmptyComponent = () => {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Image source={require('../assets/images/bookmarks.png')} style={{height: 200, width: '60%'}} />
+        <Image source={require('../assets/images/bookmarks.png')} style={{ height: 200, width: '60%' }} />
         <Text style={styles.emptyMessage}>No bookmarks saved yet.</Text>
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={urls}
-        style={{marginBottom: 20}}
+        data={sortedUrls}
+        style={{ marginBottom: 20 }}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item, index }) => (
           <View style={styles.itemContainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
-              <Text style={[styles.top, {fontSize: 16}]}>{index + 1}.</Text>
-              <Text style={[styles.top, { marginLeft: 10}]}>{item.date}</Text>
+              <Text style={[styles.top, { fontSize: 16 }]}>
+                {recent ? sortedUrls.length - index : index + 1}.
+              </Text>
+              <Text style={[styles.top, { marginLeft: 10 }]}>{item.date}</Text>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{item.title}</Text>
@@ -95,7 +126,7 @@ const [loaded, error] = useFonts({
             <Text style={styles.url} numberOfLines={1}>{item.url}</Text>
             <View style={styles.buttons}>
               <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity onPress={() => openBookmark(item.url, item.title)}>
+                <TouchableOpacity onPress={() => openBookmark(item.url)}>
                   <Text style={styles.buttonText}>Open</Text>
                 </TouchableOpacity>
               </View>
@@ -123,7 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   top: {
-    fontWeight: '600', 
+    fontWeight: '600',
     color: '#ca9bf7'
   },
   title: {
