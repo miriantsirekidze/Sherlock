@@ -82,10 +82,10 @@ const Filter = () => {
 
   const tagPrefixes = {
     keyword: 'Keyword: ',
-    website: '+Website: ',
-    domain: '+Domain: ',
-    removeWebsite: '-Website: ',
-    removeDomain: '-Domain: ',
+    website: '+ Website: ',
+    domain: '+ Domain: ',
+    removeWebsite: '- Website: ',
+    removeDomain: '- Domain: ',
     language: 'Language: ',
     country: 'Country: ',
     beforeDate: 'Before: ',
@@ -195,7 +195,7 @@ const Filter = () => {
     );
   };
 
-  const containerKeys = ['keyword', 'website', 'domain', 'removeWebsite', 'removeDomain'];
+  const containerKeys = ['website', 'domain', 'removeWebsite', 'removeDomain'];
   const activeContainer = useMemo(() => {
     return containerKeys.find(key => filters[key] !== null) || null;
   }, [filters]);
@@ -282,7 +282,6 @@ const Filter = () => {
             setToggleAlert(true);
           }}
         />
-        <TimeFilter />
         <ContainerItem
           text="Search for a keyword or a sentence."
           placeholder={"Cat"}
@@ -293,8 +292,9 @@ const Filter = () => {
             setAlertText("Use this filter to search for specific keywords or phrases within Google Images. For example, searching for 'cat' returns webpages with the word 'cat'.");
             setToggleAlert(true);
           }}
-          editable={activeContainer === null || activeContainer === 'keyword'}
+          editable={true}
         />
+        <TimeFilter />
         <Text style={{ color: 'white', fontSize: 15, fontWeight: '500', marginTop: 10 }}>Only one parameter can be picked from below.</Text>
         <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 5 }}>
           Due to Google Image Search restrictions, only one parameter at a time can be applied from the parameters below.
@@ -313,18 +313,6 @@ const Filter = () => {
           editable={activeContainer === null || activeContainer === 'website'}
         />
         <ContainerItem
-          text="Get results only from specific domain extension."
-          placeholder={".com"}
-          value={filters.domain}
-          onChangeText={(val) => updateContainerValue('domain', val)}
-          onSubmit={(value) => updateContainerValue('domain', value)}
-          customAlert={() => {
-            setAlertText("This filter finds images from websites with a specific domain extension, such as .com, .org, or .edu.");
-            setToggleAlert(true);
-          }}
-          editable={activeContainer === null || activeContainer === 'domain'}
-        />
-        <ContainerItem
           text="Remove specific website from the results."
           placeholder={"Instagram.com"}
           value={filters.removeWebsite}
@@ -337,8 +325,20 @@ const Filter = () => {
           editable={activeContainer === null || activeContainer === 'removeWebsite'}
         />
         <ContainerItem
+          text="Get results only from specific domain extension."
+          placeholder={"com"}
+          value={filters.domain}
+          onChangeText={(val) => updateContainerValue('domain', val)}
+          onSubmit={(value) => updateContainerValue('domain', value)}
+          customAlert={() => {
+            setAlertText("This filter finds images from websites with a specific domain extension, such as .com, .org, or .edu.");
+            setToggleAlert(true);
+          }}
+          editable={activeContainer === null || activeContainer === 'domain'}
+        />
+        <ContainerItem
           text="Remove a specific domain extension from results."
-          placeholder={".org"}
+          placeholder={"org"}
           value={filters.removeDomain}
           onChangeText={(val) => updateContainerValue('removeDomain', val)}
           onSubmit={(value) => updateContainerValue('removeDomain', value)}
