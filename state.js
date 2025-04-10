@@ -45,11 +45,11 @@ const store$ = observable({
     } else if (params.website) {
       qParts.push(`site:${params.website}`);
     } else if (params.domain) {
-      qParts.push(`site:${params.domain}`);
+      qParts.push(`site:.${params.domain}`);
     } else if (params.removeWebsite) {
       qParts.push(`*+-site:${params.removeWebsite}`);
     } else if (params.removeDomain) {
-      qParts.push(`*+-site:${params.removeDomain}`);
+      qParts.push(`*+-site:.${params.removeDomain}`);
     }
 
     let qString = "";
