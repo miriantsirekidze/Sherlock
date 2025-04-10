@@ -37,7 +37,6 @@ const Filter = () => {
     });
   }, []);
 
-  // Use a stable updateParameter that reads the current value from the store.
   const updateParameter = useCallback((key, value) => {
     const currentValue = store$.imagesParameters.get()[key];
     if (currentValue === value) return; // Do nothing if the value is unchanged.
@@ -48,7 +47,7 @@ const Filter = () => {
       store$.imagesParameters[key].set(null);
       console.log(`Cleared parameter [${key}]`);
     }
-  }, []); // empty dependency array makes this stable across renders
+  }, []);
 
   const updateContainerValue = (key, value) => {
     updateParameter(key, value);
@@ -284,11 +283,6 @@ const Filter = () => {
           }}
         />
         <TimeFilter />
-        <Text style={{ color: 'white', fontSize: 15, fontWeight: '500', marginTop: 10 }}>Only one parameter can be picked from below.</Text>
-        <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 5 }}>
-          Due to Google Image Search restrictions, only one parameter at a time can be applied from the parameters below.
-          <Text style={{ fontWeight: '700' }}> Values are case insensitive</Text>
-        </Text>
         <ContainerItem
           text="Search for a keyword or a sentence."
           placeholder={"Cat"}
@@ -301,6 +295,11 @@ const Filter = () => {
           }}
           editable={activeContainer === null || activeContainer === 'keyword'}
         />
+        <Text style={{ color: 'white', fontSize: 15, fontWeight: '500', marginTop: 10 }}>Only one parameter can be picked from below.</Text>
+        <Text style={{ color: '#ccc', fontSize: 12, marginBottom: 5 }}>
+          Due to Google Image Search restrictions, only one parameter at a time can be applied from the parameters below.
+          <Text style={{ fontWeight: '700' }}> Values are case insensitive</Text>
+        </Text>
         <ContainerItem
           text="Find results from specific website."
           placeholder={"Facebook.com"}

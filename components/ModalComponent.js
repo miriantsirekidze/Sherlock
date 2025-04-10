@@ -66,7 +66,6 @@ const ModalComponent = ({ visible, onClose, isUrl }) => {
                 Filter
               </Text>
             </TouchableOpacity>
-            {/* Animated underline */}
             <Animated.View style={[styles.underline, animatedUnderlineStyle]} />
           </View>
 
