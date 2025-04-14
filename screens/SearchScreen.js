@@ -17,11 +17,23 @@ import Picarta from '../components/Picarta';
 import Images from '../components/Images';
 import Copyseeker from '../components/Copyseeker';
 
+import LoadingOverlay from '../components/LoadingOverlay';
+
 const SearchScreen = ({ route }) => {
   const navigation = useNavigation();
   NavigationBar.setBackgroundColorAsync('#333');
 
   const { url, uri } = route.params;
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const encodedUrl = encodeURI(url);
 
   const [currentUrl, setCurrentUrl] = useState(store$.currentUrl.get());
@@ -252,6 +264,8 @@ const SearchScreen = ({ route }) => {
           </View>
         ))}
       </View>
+
+      {isLoading && <LoadingOverlay/>}
 
       <View style={styles.buttonContainer}>
         <FlatList

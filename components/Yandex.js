@@ -10,9 +10,9 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
-      return true; // Prevent default back behavior
+      return true;
     }
-    return false; // Allow default behavior (go back to the previous screen)
+    return false; 
   }, [canGoBack]);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
       if (message.type === "title" && message.title && onTitleChange) {
-        onTitleChange(message.title); // Pass the title to the parent component
+        onTitleChange(message.title); 
       }
     } catch (error) {
       console.warn("Error parsing message from WebView:", error);
@@ -36,14 +36,13 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
   }
 
   const handleNavigationStateChange = (state) => {
-    store$.currentUrl.set(state.url); // Update the global state
-    setCanGoBack(state.canGoBack); // Update the `canGoBack` state
+    store$.currentUrl.set(state.url); 
+    setCanGoBack(state.canGoBack);
 
     if (onUrlChange) {
       onUrlChange(state.url);
     }
 
-    // Inject JavaScript to extract the page title
     webViewRef.current?.injectJavaScript(`
       (function() {
         const title = document.title;
@@ -64,7 +63,6 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
       cacheMode="LOAD_CACHE_ELSE_NETWORK"
       javaScriptEnabled={true}
       domStorageEnabled={true}
-      userAgent="Mozilla/5.0 (Linux; Android 11; Pixel 4 XL Build/RP1A.200720.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36"
       onMessage={handleMessage}
     />
   );
