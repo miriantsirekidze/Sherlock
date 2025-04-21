@@ -1,4 +1,4 @@
-export const countryData = [
+export const country = [
   { "key": "Ascension Island", "code": "AC" },
   { "key": "Andorra", "code": "AD" },
   { "key": "United Arab Emirates", "code": "AE" },

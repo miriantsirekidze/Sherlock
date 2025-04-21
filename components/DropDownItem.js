@@ -4,9 +4,35 @@ import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+import {overrides} from '../data/languageOverrides' 
+
 const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, customAlert, placeholder, icon, onSubmit }) => {
   const [tempValue, setTempValue] = useState(value);
   const [display, setDisplay] = useState(false);
+
+  const countryToEmoji = iso =>
+    iso
+      .toUpperCase()
+      .replace(/./g, c =>
+        String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)
+      );
+  
+  const getFlagEmoji = (code = '') => {
+    if (overrides[code]) {
+      return countryToEmoji(overrides[code]);
+    }
+  
+    const region = code.includes('-')
+      ? code.split('-')[1]
+      : code;
+  
+    if (/^[A-Za-z]{2}$/.test(region)) {
+      return countryToEmoji(region);
+    }
+  
+    return '';
+  };
+  
 
   useEffect(() => {
     setTempValue(value);
@@ -25,15 +51,22 @@ const DropDownItem = ({ value, setValue, setIsFocus, isFocus, data, text, custom
           style={styles.dropdown}
           placeholderStyle={[{ fontSize: 14 }, tempValue !== null ? { color: '#EDEADE' } : { color: '#FFFFFF90' }]}
           selectedTextStyle={[styles.selectedTextStyle, display ? { color: '#EDEADE' } : { color: '#FFFFFF50' }]}
-          containerStyle={{ borderRadius: 10, backgroundColor: '#333', overflow: 'hidden' }}
-          itemTextStyle={{ color: '#EDEADE', fontSize: 15 }}
+          containerStyle={{ borderRadius: 15, backgroundColor: '#333', overflow: 'hidden' }}
+          itemTextStyle={{ color: '#EDEADE', fontSize: 15,}}
           itemContainerStyle={{ backgroundColor: '#333' }}
+          activeColor='#222'
           inputSearchStyle={styles.inputSearchStyle}
+          renderItem={dataItem => (
+            <View style={styles.item}>
+              <Text style={styles.flag}>{getFlagEmoji(dataItem.code)}</Text>
+              <Text style={styles.itemText}>{dataItem.key}</Text>
+            </View>
+          )}
           iconStyle={styles.iconStyle}
           data={data}
           search
           minHeight={200}
-          maxHeight={300}
+          maxHeight={345}
           labelField="key"
           valueField="code"
           placeholder={!isFocus && !tempValue ? placeholder : tempValue || 'select'}
@@ -94,7 +127,8 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 5,
     width: '100%',
-    padding: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 15,
     backgroundColor: '#444',
     borderRadius: 20,
     elevation: 8,
@@ -102,7 +136,7 @@ const styles = StyleSheet.create({
   dropdown: {
     borderRadius: 10,
     backgroundColor: '#333',
-    width: '90%',
+    width: '87%',
     height: 40,
     paddingHorizontal: 10,
     marginTop: 10,
@@ -111,6 +145,19 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 5,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  flag: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  itemText: {
+    color: '#EDEADE',
+    fontSize: 15,
   },
   placeholderStyle: {
     fontSize: 16,
