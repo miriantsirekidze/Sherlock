@@ -1,4 +1,4 @@
-export const languageData = [
+export const language = [
   {"key": "Amharic", "code": "am"},
   {"key": "Arabic", "code": "ar"},
   {"key": "Basque", "code": "eu"},

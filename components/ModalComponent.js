@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#252728',
     borderRadius: 20,
     padding: 20,
-    width: '90%',
+    width: '95%',
     height: 0.85 * height,
   },
   header: {

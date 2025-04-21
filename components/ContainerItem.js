@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#333',
-    width: '90%',
+    width: '87%',
     height: 40,
     borderRadius: 10,
     paddingHorizontal: 10,
@@ -101,7 +101,8 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 5,
     width: '100%',
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
     backgroundColor: '#444',
     borderRadius: 20,
     elevation: 8,

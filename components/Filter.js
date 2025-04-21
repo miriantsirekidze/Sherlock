@@ -4,8 +4,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import ContainerItem from './ContainerItem';
 import DatePicker from 'react-native-date-picker';
 import DropDownItem from './DropDownItem';
-import { countryData } from '../data/country';
-import { languageData } from '../data/language';
+import { country } from '../data/country';
+import { language } from '../data/language';
 import { Feather } from '@expo/vector-icons';
 import store$ from '../state';
 
@@ -39,7 +39,7 @@ const Filter = () => {
 
   const updateParameter = useCallback((key, value) => {
     const currentValue = store$.imagesParameters.get()[key];
-    if (currentValue === value) return; // Do nothing if the value is unchanged.
+    if (currentValue === value) return; 
     setFilters(prev => ({ ...prev, [key]: value }));
     if (value) {
       store$.addParameter(key, value);
@@ -134,7 +134,7 @@ const Filter = () => {
           </TouchableOpacity>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={[styles.inputContainer, { width: '44%' }]}>
+          <View style={[styles.inputContainer, { width: '42%' }]}>
             <View style={[styles.textInput, { justifyContent: 'center' }]}>
               <Text style={{ color: tempBefore ? '#EDEADE' : '#FFFFFF90' }}>
                 {tempBefore == null ? 'Before' : formatDate(tempBefore)}
@@ -156,7 +156,7 @@ const Filter = () => {
               onCancel={() => setLocalOpenBefore(false)}
             />
           </View>
-          <View style={[styles.inputContainer, { width: '44%', marginLeft: '2%' }]}>
+          <View style={[styles.inputContainer, { width: '42%', marginLeft: '3%' }]}>
             <View style={[styles.textInput, { justifyContent: 'center' }]}>
               <Text style={{ color: tempAfter ? '#EDEADE' : '#FFFFFF90' }}>
                 {tempAfter == null ? 'After' : formatDate(tempAfter)}
@@ -204,7 +204,7 @@ const Filter = () => {
     <View>
       <CustomAlert />
 
-      <View style={{ alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', marginVertical: 10 }}>
+      <View style={{ alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap',  }}>
         {Object.entries(filters).map(([key, value]) => {
           if (!value) return null;
           let displayValue = value;
@@ -212,13 +212,13 @@ const Filter = () => {
             displayValue = formatDate(value);
           }
           if (key === 'language') {
-            const found = languageData.find(item => item.code === value);
+            const found = language.find(item => item.code === value);
             if (found) {
               displayValue = found.key;
             }
           }
           if (key === 'country') {
-            const found = countryData.find(item => item.code === value);
+            const found = country.find(item => item.code === value);
             if (found) {
               displayValue = found.key;
             }
@@ -258,7 +258,7 @@ const Filter = () => {
           icon="language-outline"
           value={filters.language}
           isFocus={isFocus}
-          data={languageData}
+          data={language}
           setValue={(val) => updateParameter('language', val)}
           setIsFocus={setIsFocus}
           onSubmit={(value) => updateParameter('language', value)}
@@ -273,7 +273,7 @@ const Filter = () => {
           placeholder={'Georgia'}
           value={filters.country}
           isFocus={isFocus}
-          data={countryData}
+          data={country}
           setIsFocus={setIsFocus}
           setValue={(val) => updateParameter('country', val)}
           onSubmit={(value) => updateParameter('country', value)}
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#333',
-    width: '90%',
+    width: '87%',
     height: 40,
     borderRadius: 10,
     paddingHorizontal: 10,
@@ -385,7 +385,8 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '100%',
-    padding: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 15,
     backgroundColor: '#444',
     borderRadius: 20,
     elevation: 8,
