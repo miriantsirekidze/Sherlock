@@ -231,11 +231,11 @@ const Filter = () => {
           return (
             <TouchableOpacity
               key={key}
-              style={{ flexDirection: 'row', padding: 5, paddingHorizontal: 15, borderRadius: 30, borderWidth: 1, borderColor: 'white', alignItems: 'center', margin: 5 }}
+              style={{ flexDirection: 'row', padding: 5, paddingHorizontal: 10, borderRadius: 30, borderWidth: 1, borderColor: 'white', alignItems: 'center', margin: 5 }}
               onPress={() => updateParameter(key, null)}
             >
               <Feather name='x' size={18} color={'white'} />
-              <Text style={{ marginLeft: 5, fontSize: 12, color: 'white' }}>{fullText}</Text>
+              <Text style={{ fontSize: 12, color: 'white' }}>{fullText}</Text>
             </TouchableOpacity>
           );
         })}
@@ -243,8 +243,7 @@ const Filter = () => {
 
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white' }}>Google Image Search filters</Text>
-          <Image source={require('../assets/icons/google.png')} style={{ height: 24, width: 24, marginLeft: 10 }} />
+          <Text style={{ fontSize: 16, fontWeight: '600', color: 'white', marginTop: 5 }}>Google Image Search filters</Text>
         </View>
         <TouchableOpacity onPress={clearFilters} style={{ marginLeft: 'auto' }}>
           <Text style={{ color: '#FFFFFF90', fontSize: 16, fontWeight: 'bold' }}>Reset</Text>
@@ -268,7 +267,7 @@ const Filter = () => {
           }}
         />
         <DropDownItem
-          text={"Try to get webpages from certain country"}
+          text={"Try to get webpages from certain country or region"}
           icon="earth-outline"
           placeholder={'Georgia'}
           value={filters.country}
