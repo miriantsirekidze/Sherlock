@@ -22,14 +22,15 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import ModalComponent from '../components/ModalComponent';
 import ArticleItem from '../components/ArticleItem';
+import Footer from '../components/Footer';
 
 import { articles } from '../data/articles';
 import { KEY } from '@env';
 
 
 const HomeScreen = () => {
-  
-  NavigationBar.setBackgroundColorAsync('#333');
+
+  NavigationBar.setBackgroundColorAsync('#0f0f0f');
 
   const [image, setImage] = useState(null);
   const [urlText, setUrlText] = useState("");
@@ -210,6 +211,7 @@ const HomeScreen = () => {
                 isUrlValid === false && <Text style={styles.errorText}>Invalid URL</Text>
               )}
               <Button onPress={() => uploadFile({ imageUrl: urlText })} icon="image-search-outline" text="Search" />
+
               <AnimatedSearchButton
                 urlText={urlText}
                 setUrlText={setUrlText}
@@ -225,9 +227,9 @@ const HomeScreen = () => {
             <ArticleItem key={index} item={item} />
           ))}
         </View>
+        <Footer />
       </ScrollView>
-
-      <ModalComponent visible={modalVisible} onClose={() => setModalVisible(false)} isUrl={isUrlValid}/>
+      <ModalComponent visible={modalVisible} onClose={() => setModalVisible(false)} isUrl={isUrlValid} />
     </SafeAreaView>
   );
 };

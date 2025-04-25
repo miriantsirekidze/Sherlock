@@ -10,16 +10,18 @@ const WebViewScreen = ({ route }) => {
   const webViewRef = useRef(null);
   const navigation = useNavigation();
 
-  const conditional = url && url.startsWith('https://copyseeker.net');
+  const isCopyseeker = url && url.startsWith('https://copyseeker.net');
+  const isTOS = url && url.startsWith('https://sherlock.expo.app/tos')
+  const isPrivacy = url && url.startsWith('https://sherlock.expo.app/privacy')
 
   useEffect(() => {
     navigation.setOptions({
-      title: conditional ? 'Copyseeker' : pageTitle,
+      title: isCopyseeker ? 'Copyseeker' : isTOS ? 'Terms of Service' : isPrivacy ? 'Privacy Policy' : pageTitle,
       headerTitleStyle: {
         fontSize: 18,
       },
     });
-  }, [navigation, pageTitle, url, conditional]);
+  }, [navigation, pageTitle, url, isCopyseeker, isTOS, isPrivacy]);
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
