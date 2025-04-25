@@ -55,7 +55,7 @@ const ModalComponent = ({ visible, onClose, isUrl }) => {
               style={styles.tab}
               onLayout={event => onTabLayout('optional', event)}>
               <Text style={[styles.tabText, activeTab === 'optional' && styles.activeTabText]}>
-                Optional
+                Options
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
