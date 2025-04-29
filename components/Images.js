@@ -34,7 +34,6 @@ const Images = ({ url, onUrlChange, onTitleChange }) => {
   
   const baseUrl = `https://www.google.com/searchbyimage?image_url=${encodedUrl}&client=firefox-b-d'`;
   const finalUrl = buildFinalURL(baseUrl);
-  console.log(finalUrl)
   
   const handleMessage = (event) => {
     try {
