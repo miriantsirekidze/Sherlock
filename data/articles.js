@@ -175,7 +175,7 @@ export const articles = [
   {
     title: "Sherlock",
     time: { date: "February, 2025", duration: "1 min" },
-    image: require('../assets/images/sherlock_inverted.png'),
+    image: require('../assets/icon.png'),
     shortDescription: "About Sherlock.",
     description: [
       { text: "I'd like to start with saying that, none of the actual reverse image search engines are made by me, nor I had any contributions in making them. The problem Sherlock is solving is that now less time is spent on trivial things and more for actually searching. It also introduces people to websites and services that they might not have known before." },
