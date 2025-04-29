@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 firebaseConfig.js
+gp/
 
 # Expo
 .expo/
