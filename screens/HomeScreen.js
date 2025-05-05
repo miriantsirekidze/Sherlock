@@ -25,7 +25,7 @@ import ArticleItem from '../components/ArticleItem';
 import Footer from '../components/Footer';
 
 import { articles } from '../data/articles';
-import { KEY } from '@env';
+import { PUBLIC_KEY } from '@env';
 
 
 const HomeScreen = () => {
@@ -72,20 +72,33 @@ const HomeScreen = () => {
   };
 
   const uploadFile = async ({ imageUri = null, imageUrl = null }) => {
-    if (imageUrl && lastUploaded.originalUrl && imageUrl === lastUploaded.originalUrl) {
-      navigation.navigate('Search', { url: lastUploaded.processedUrl, uri: null });
-      return;
+    if (
+      (imageUrl && imageUrl === lastUploaded.originalUrl) ||
+      (imageUri && imageUri === lastUploaded.uri)
+    ) {
+      return navigation.navigate('Search', {
+        url: lastUploaded.processedUrl,
+        uri: imageUri ?? null,
+      });
     }
-    if (imageUri && lastUploaded.uri && imageUri === lastUploaded.uri) {
-      navigation.navigate('Search', { url: lastUploaded.processedUrl, uri: imageUri });
-      return;
-    }
-
+  
     setIsLoading(true);
+    const totalStart = performance.now();
+  
     try {
-      const formData = new FormData();
+      // 1️⃣ Auth fetch timing
+      const authStart = performance.now();
+      const authRes = await fetch('https://sherlock.expo.app/api');
+      const authDuration = performance.now() - authStart;
+      console.log(`⏱️ Auth fetch took: ${authDuration.toFixed(1)}ms`);
+  
+      if (!authRes.ok) {
+        throw new Error(`Auth fetch failed: ${authRes.status}`);
+      }
+      const { signature, token, expire } = await authRes.json();
+  
+      // Prepare file data
       let fileData;
-
       if (imageUri) {
         fileData = await FileSystem.readAsStringAsync(imageUri, {
           encoding: FileSystem.EncodingType.Base64,
@@ -93,39 +106,61 @@ const HomeScreen = () => {
       } else {
         fileData = imageUrl;
       }
-      const time = new Date().getTime()
-
+  
+      // Build form data
+      const formData = new FormData();
       formData.append('file', fileData);
-      formData.append('fileName', `${time}`);
-      formData.append('expire', `${time + 3560}`);
-
-      const uploadUrl = 'https://upload.imagekit.io/api/v1/files/upload';
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Basic ${KEY}`,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (!data.error) {
-        const downloadURL = data.url;
-        console.log("Upload success:", downloadURL);
-        setLastUploaded({ uri: imageUri, originalUrl: imageUrl, processedUrl: downloadURL });
-        navigation.navigate('Search', { url: downloadURL, uri: imageUri ? imageUri : null });
-      } else {
-        console.error('ImageKit upload failed:', data.error);
-        Alert.alert("Upload failed", "ImageKit did not return success");
+      formData.append('fileName', `${Date.now()}`);
+      formData.append('publicKey', PUBLIC_KEY);
+      formData.append('signature', signature);
+      formData.append('token', token);
+      formData.append('expire', `${expire}`);
+  
+      // 2️⃣ ImageKit upload timing
+      const uploadStart = performance.now();
+      const response = await fetch(
+        'https://upload.imagekit.io/api/v1/files/upload',
+        {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: formData,
+        }
+      );
+      const uploadDuration = performance.now() - uploadStart;
+      console.log(`⏱️ ImageKit upload took: ${uploadDuration.toFixed(1)}ms`);
+  
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Upload error ${response.status}: ${text}`);
       }
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      Alert.alert("Upload failed", error.message);
+  
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(
+          `ImageKit: ${data.error.message || JSON.stringify(data.error)}`
+        );
+      }
+  
+      // Log total elapsed
+      const totalDuration = performance.now() - totalStart;
+      console.log(`✅ Total uploadFile() took: ${totalDuration.toFixed(1)}ms`);
+  
+      // Update last-upload state and navigate
+      setLastUploaded({
+        uri: imageUri,
+        originalUrl: imageUrl,
+        processedUrl: data.url,
+      });
+      navigation.navigate('Search', { url: data.url, uri: imageUri });
+    } catch (err) {
+      console.error('Upload failed:', err);
+      Alert.alert('Upload failed', err.message);
+    } finally {
       setIsLoading(false);
     }
   };
+  
+  
 
   const handleUrlSearch = async (enteredUrl) => {
     const isValid = await validateUrl(enteredUrl);
