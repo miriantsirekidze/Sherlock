@@ -250,7 +250,7 @@ const SearchScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" translucent={false} />
+      <StatusBar style="light" translucent={false} />
       <View style={styles.webViewContainer}>
         {Object.keys(enabledButtons).map((key) => (
           <View
@@ -265,7 +265,8 @@ const SearchScreen = ({ route }) => {
         ))}
       </View>
 
-      {isLoading && <LoadingOverlay/>}
+      {isLoading && <LoadingOverlay />}
+
 
       <View style={styles.buttonContainer}>
         <FlatList
