@@ -86,9 +86,8 @@ const HomeScreen = () => {
     const totalStart = performance.now();
   
     try {
-      // 1️⃣ Auth fetch timing
       const authStart = performance.now();
-      const authRes = await fetch('https://sherlock.expo.app/api');
+      const authRes = await fetch('https://sherlock.expo.app/keys');
       const authDuration = performance.now() - authStart;
       console.log(`⏱️ Auth fetch took: ${authDuration.toFixed(1)}ms`);
   
@@ -97,7 +96,6 @@ const HomeScreen = () => {
       }
       const { signature, token, expire } = await authRes.json();
   
-      // Prepare file data
       let fileData;
       if (imageUri) {
         fileData = await FileSystem.readAsStringAsync(imageUri, {
@@ -116,7 +114,6 @@ const HomeScreen = () => {
       formData.append('token', token);
       formData.append('expire', `${expire}`);
   
-      // 2️⃣ ImageKit upload timing
       const uploadStart = performance.now();
       const response = await fetch(
         'https://upload.imagekit.io/api/v1/files/upload',
@@ -141,11 +138,9 @@ const HomeScreen = () => {
         );
       }
   
-      // Log total elapsed
       const totalDuration = performance.now() - totalStart;
       console.log(`✅ Total uploadFile() took: ${totalDuration.toFixed(1)}ms`);
   
-      // Update last-upload state and navigate
       setLastUploaded({
         uri: imageUri,
         originalUrl: imageUrl,

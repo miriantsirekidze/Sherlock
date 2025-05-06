@@ -1,66 +1,31 @@
-import React, { useEffect } from 'react';
-import { Alert } from 'react-native';
-import { KEY } from '@env';
+import { useEffect } from 'react';
+
+import {CLEANUP_API_KEY} from "@env"
 
 const useCleanOldFiles = () => {
   useEffect(() => {
-    const checkAndDeleteOldFiles = async () => {
+    const cleanup = async () => {
       try {
-        const fetchUrl = 'https://api.imagekit.io/v1/files?fileType=all&limit=100';
-        const fetchOptions = {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Basic ${KEY}`
-          }
-        };
-        const response = await fetch(fetchUrl, fetchOptions);
-        const data = await response.json();
-        const files = Array.isArray(data) ? data : data.data;
-        if (!files || files.length === 0) {
-          console.log('No files found');
-          return;
-        }
-
-        const now = Date.now();
-        const oneHourInMs = 3600 * 1000;
-        const oldFiles = files.filter(file => {
-          const createdTime = new Date(file.createdAt).getTime();
-          return now - createdTime > oneHourInMs;
-        });
-
-        if (oldFiles.length > 0) {
-          const fileIds = oldFiles.map(file => file.fileId);
-          console.log('Deleting old files:', fileIds);
-          const deleteUrl = 'https://api.imagekit.io/v1/files/batch/deleteByFileIds';
-          const deleteOptions = {
-            method: 'POST',
+        const resp = await fetch(
+          'https://sherlock.expo.app/cleanup',
+          {
+            method: 'GET',
             headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-              Authorization: `Basic ${KEY}`
+              'x-api-key': CLEANUP_API_KEY,
             },
-            body: JSON.stringify({ fileIds })
-          };
-          const deleteResponse = await fetch(deleteUrl, deleteOptions);
-          const deleteData = await deleteResponse.json();
-          console.log('Delete response:', deleteData);
-        } else {
-          console.log('No files older than one hour found.');
-        }
-      } catch (error) {
-        console.error("Error checking/deleting old files:", error);
-        Alert.alert("Error", "There was an error while cleaning up old files.");
+          }
+        );
+        if (!resp.ok) throw new Error(`Status ${resp.status}`);
+        const json = await resp.json()
+        console.log('Cleanup result:', json);
+      } catch (err) {
+        console.error('Cleanup failed:', err);
       }
     };
 
-    checkAndDeleteOldFiles();
-
-    const intervalId = setInterval(() => {
-      checkAndDeleteOldFiles();
-    }, 60 * 60 * 1000); 
-
-    return () => clearInterval(intervalId);
+    cleanup();
+    const id = setInterval(cleanup, 60 * 60 * 1000);
+    return () => clearInterval(id);
   }, []);
 };
 
