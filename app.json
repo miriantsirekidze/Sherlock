@@ -20,7 +20,6 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.miriantsirekidze.sherlock",
@@ -47,6 +46,11 @@
           ]
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "62be1db5-8c96-400e-8f22-bec178aa3388"
+      }
+    }
   }
 }
