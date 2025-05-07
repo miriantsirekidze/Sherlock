@@ -25,7 +25,7 @@ import ArticleItem from '../components/ArticleItem';
 import Footer from '../components/Footer';
 
 import { articles } from '../data/articles';
-import { PUBLIC_KEY } from '@env';
+import { PUBLIC_KEY } from '@env'
 
 
 const HomeScreen = () => {
@@ -105,7 +105,6 @@ const HomeScreen = () => {
         fileData = imageUrl;
       }
   
-      // Build form data
       const formData = new FormData();
       formData.append('file', fileData);
       formData.append('fileName', `${Date.now()}`);

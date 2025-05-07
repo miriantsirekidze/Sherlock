@@ -10,10 +10,14 @@ const ArticleItem = ({ item }) => {
   const navigation = useNavigation();
   const { title, shortDescription, image, description, time } = item;
 
+  let styling = [
+    title == 'Sherlock' ? styles.sherlock : title == 'Yandex Images' ? styles.yandex : title == 'Other Engines' ? styles.normal : title == 'Google Images' ? styles.normal : styles.image
+  ]
+
   return (
     <View style={styles.itemContainer}>
       <TouchableOpacity style={styles.touchable} onPress={() => navigation.navigate("Tip", { title, image, description, time })} activeOpacity={0.8}>
-        <Image source={image} style={[title == 'Sherlock' ? styles.sherlock : styles.image]} />
+        <Image source={image} style={styling} />
         <View style={styles.tipContainer}>
           <View style={styles.titleAndTime}>
             <Text style={styles.titleStyle}>{title}</Text>
@@ -35,41 +39,41 @@ const styles = StyleSheet.create({
   itemContainer: {
     alignItems: 'center',
     width: width,
-    height: height * 0.45, // This makes each item 45% of the screen height
-    marginVertical: 10,   // Optional: adds space between items
+    height: height * 0.45,
+    marginVertical: 10,
   },
   timeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     margin: 5
   },
-  tipContainer: { 
-    position: 'absolute', 
-    bottom: 0, 
-    padding: 10, 
-    backgroundColor: 'rgba(0,0,0,0.3)', 
-    width: '100%', 
-    height: '35%', 
-    borderBottomLeftRadius: 30, 
-    borderBottomRightRadius: 30 
+  tipContainer: {
+    position: 'absolute',
+    bottom: 0,
+    padding: 10,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    width: '100%',
+    height: '35%',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30
   },
   description: {
-    color: 'white', 
-    fontSize: 13, 
-    fontWeight: '500', 
+    color: 'white',
+    fontSize: 13,
+    fontWeight: '500',
     margin: 5
   },
   titleStyle: {
-    color: 'white', 
-    fontSize: 18, 
-    fontWeight: '600', 
-    margin: 5, 
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    margin: 5,
     flexShrink: 1
   },
-  titleAndTime: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center' 
+  titleAndTime: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   timeText: {
     color: '#E0E0E0',
@@ -95,5 +99,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#1F1F1F',
     elevation: 10,
     alignItems: 'center'
+  },
+  yandex: {
+    width: '50%',
+    height: '50%',
+    resizeMode: 'contain',
+    marginTop: '10%'
+  },
+  normal: {
+    width: '80%',
+    height: '50%',
+    resizeMode: 'contain',
+    marginTop: '10%'
   }
 })  

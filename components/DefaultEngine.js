@@ -23,7 +23,7 @@ const DefaultEngine = () => {
         style={{ flexDirection: 'row', alignItems: 'center' }}
         onPress={() => setIsToggled(title)}
       >
-        <Image source={icon} style={styles.icon} />
+        <Image source={icon} style={[title == 'Copyseeker' ? styles.copyseeker : styles.icon]} />
         <Text style={styles.iconTitleText}>{title}</Text>
       </TouchableOpacity>
       {isToggled === title && <FontAwesome6 name="check" size={22} color="white" />}
@@ -82,4 +82,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     height: 'auto'
   },
+  copyseeker: {
+    backgroundColor: 'white',
+    height: 26,
+    width: 26,
+    borderRadius: 30
+  }
 });
