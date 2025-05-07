@@ -299,7 +299,7 @@ const SearchScreen = ({ route }) => {
                   ]}
                   onPress={() => setActiveComponent(item.key)}
                 >
-                  <Image style={[{ height: 30, width: 30 }, item.key == 'Copyseeker' && {height: 30, width: 30, backgroundColor: 'white', borderRadius: 20} ]} source={item.img} />
+                  <Image style={[{ height: 30, width: 30 }, item.key == 'Copyseeker' && {height: 30, width: 30, backgroundColor: 'white', borderRadius: 25} ]} source={item.img} />
                 </TouchableOpacity>
               )}
             </View>
