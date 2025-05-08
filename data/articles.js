@@ -69,7 +69,7 @@ export const articles = [
   {
     title: "Yandex Images",
     time: { date: "January, 2025", duration: "1~2 min" },
-    image: require('../assets/images/yandex(1).png'),
+    image: require('../assets/icons/yandex.png'),
     shortDescription: "Yandex Images - What's different from Google Lens?",
     description: [
       { text: "Yandex Images is another very popular reverse image search engine, which is based in Russia. People consider Yandex Images a big player in reverse image search game, some even saying that it's better than Lens in face recognition, but how true are those claims?" },
