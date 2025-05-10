@@ -86,7 +86,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.sherlock"
+    namespace 'com.miriantsirekidze.sherlock'
     defaultConfig {
         applicationId 'com.miriantsirekidze.sherlock'
         minSdkVersion rootProject.ext.minSdkVersion

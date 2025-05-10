@@ -23,6 +23,7 @@
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.miriantsirekidze.sherlock",
+      "namespace": "com.miriantsirekidze.sherlock",
       "versionCode": 1
     },
     "web": {
