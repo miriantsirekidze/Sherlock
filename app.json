@@ -19,9 +19,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ],
+      "permissions": ["android.permission.RECORD_AUDIO"],
       "package": "com.miriantsirekidze.sherlock",
       "namespace": "com.miriantsirekidze.sherlock",
       "versionCode": 1
@@ -34,6 +32,16 @@
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to reverse image search."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "extraProguardRules": "-keep public class com.horcrux.svg.** {*;}",
+            "allowBackup": false
+          }
         }
       ],
       [
