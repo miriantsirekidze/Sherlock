@@ -22,7 +22,7 @@
       "permissions": ["android.permission.RECORD_AUDIO"],
       "package": "com.miriantsirekidze.sherlock",
       "namespace": "com.miriantsirekidze.sherlock",
-      "versionCode": 1
+      "versionCode": 5
     },
     "web": {
       "favicon": "./assets/favicon.png"
