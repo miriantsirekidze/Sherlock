@@ -12,11 +12,9 @@
     "@legendapp/state": "^3.0.0-beta.19",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/native-stack": "^7.1.0",
-    "dotenv": "^16.5.0",
     "expo": "~52.0.35",
+    "expo-build-properties": "~0.13.3",
     "expo-clipboard": "~7.0.1",
-    "expo-dev-client": "~5.0.12",
-    "expo-dev-menu": "^6.0.10",
     "expo-file-system": "~18.0.11",
     "expo-font": "~13.0.3",
     "expo-image-picker": "~16.0.6",
@@ -35,13 +33,13 @@
     "react-native-screens": "~4.4.0",
     "react-native-svg": "15.8.0",
     "react-native-webview": "13.12.5",
-    "expo-build-properties": "~0.13.3",
-    "expo-updates": "~0.27.4"
+    "expo-dev-client": "~5.0.20"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@react-native-community/cli": "latest",
-    "babel-plugin-dotenv-import": "^3.0.1"
+    "babel-plugin-dotenv-import": "^3.0.1",
+    "react-native-dotenv": "^3.4.11"
   },
   "private": true
 }
