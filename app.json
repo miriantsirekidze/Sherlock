@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Sherlock",
-    "slug": "Sherlock",
+    "slug": "sherlock",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,7 +19,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["android.permission.RECORD_AUDIO"],
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
       "package": "com.miriantsirekidze.sherlock",
       "versionCode": 5
     },
@@ -57,7 +59,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "62be1db5-8c96-400e-8f22-bec178aa3388"
+        "projectId": "216daa0c-8eaf-41bd-b7a3-539f8ae7c5b8"
       }
     }
   }

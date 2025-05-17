@@ -1,35 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ToastAndroid, Image } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import * as SplashScreen from 'expo-splash-screen';
 import store$ from '../state';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useFonts } from 'expo-font';
 import { useSelector } from '@legendapp/state/react';
 import { useNavigation } from '@react-navigation/native';
 
-SplashScreen.preventAutoHideAsync();
-
 const SavedScreen = () => {
   const navigation = useNavigation();
-
-  const [loaded, error] = useFonts({
-    'CaudexBold': require('../assets/fonts/CaudexBold.ttf'),
-    'CaudexBoldItalic': require('../assets/fonts/CaudexBoldItalic.ttf'),
-    'CaudexItalic': require('../assets/fonts/CaudexItalic.ttf'),
-    'CaudexRegular': require('../assets/fonts/CaudexRegular.ttf')
-  });
-
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
-
-  if (!loaded && !error) {
-    return null;
-  }
 
   const [recent, setRecent] = useState(true);
 

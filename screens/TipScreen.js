@@ -1,23 +1,11 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View, Image, ScrollView } from 'react-native';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
-
-SplashScreen.preventAutoHideAsync();
 
 const TipScreen = ({ route }) => {
   const { title, time, description, image } = route.params;
   const navigation = useNavigation();
-
-  const [loaded, error] = useFonts({
-    'CaudexBold': require('../assets/fonts/CaudexBold.ttf'),
-    'CaudexBoldItalic': require('../assets/fonts/CaudexBoldItalic.ttf'),
-    'CaudexItalic': require('../assets/fonts/CaudexItalic.ttf'),
-    'CaudexRegular': require('../assets/fonts/CaudexRegular.ttf')
-  });
-
 
   useEffect(() => {
     navigation.setOptions({
@@ -28,16 +16,6 @@ const TipScreen = ({ route }) => {
       },
     });
   }, [navigation, title]);
-
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
-
-  if (!loaded && !error) {
-    return null;
-  }
 
   const linkStyle = { "backgroundColor": "#00000050", "borderRadius": 15, "color": "#cec", "padding": 15, "textDecorationLine": "underline" }
   const normalize = (obj) =>

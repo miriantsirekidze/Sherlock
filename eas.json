@@ -5,11 +5,8 @@
   },
   "build": {
     "development": {
-      "developmentClient": false,
-      "distribution": "internal",
-      "android": {
-        "buildType": "app-bundle"
-      }
+      "developmentClient": true,
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal"
