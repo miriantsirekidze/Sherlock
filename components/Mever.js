@@ -2,18 +2,21 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Dimensions, Platform, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import store$ from '../state';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Mever({ url, onUrlChange, onTitleChange }) {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
+  const navigation = useNavigation();
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
       return true;
     }
-    return false;
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {

@@ -1,18 +1,21 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { useNavigation } from '@react-navigation/native';
 
 const Picarta = ({ url }) => {
-  const webViewRef = useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
+  const webViewRef = useRef(null);
+  const navigation = useNavigation();
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
       return true;
     }
-    return false;
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -63,7 +66,7 @@ const Picarta = ({ url }) => {
         }
       }
     } catch (err) {
-      
+
     }
   };
 

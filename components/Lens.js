@@ -2,18 +2,21 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
+import { useNavigation } from '@react-navigation/native';
 
 const Lens = ({ url, onUrlChange, onTitleChange }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
+  const navigation = useNavigation();
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
       return true;
     }
-    return false;
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -24,35 +27,30 @@ const Lens = ({ url, onUrlChange, onTitleChange }) => {
     }
   }, [onAndroidBackPress]);
 
-  const handleMessage = (event) => {
+  const handleMessage = event => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
-      if (message.type === "title" && message.title && onTitleChange) {
-        onTitleChange(message.title); // Pass the title to the parent component
+      if (message.type === 'title' && message.title && onTitleChange) {
+        onTitleChange(message.title);
       }
     } catch (error) {
-      console.warn("Error parsing message from WebView:", error);
+      console.warn('Error parsing message from WebView:', error);
     }
-  }
+  };
 
-  const handleNavigationStateChange = (state) => {
-    store$.currentUrl.set(state.url); // Update the global state
-    setCanGoBack(state.canGoBack); // Update the `canGoBack` state
+  const handleNavigationStateChange = state => {
+    store$.currentUrl.set(state.url);
+    setCanGoBack(state.canGoBack);
+    onUrlChange?.(state.url);
 
-    if (onUrlChange) {
-      onUrlChange(state.url);
-    }
-
-    // Inject JavaScript to extract the page title
     webViewRef.current?.injectJavaScript(`
       (function() {
         const title = document.title;
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "title", title }));
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'title', title }));
       })();
-      true; // Required for JavaScript to execute correctly
+      true;
     `);
   };
-
 
   const encodedUrl = encodeURIComponent(url).replace(/%20/g, '+');
 
@@ -63,10 +61,10 @@ const Lens = ({ url, onUrlChange, onTitleChange }) => {
       allowsBackForwardNavigationGestures
       onNavigationStateChange={handleNavigationStateChange}
       setSupportMultipleWindows={false}
-      nestedScrollEnabled={true}
+      nestedScrollEnabled
       cacheMode="LOAD_NO_CACHE"
-      javaScriptEnabled={true}
-      domStorageEnabled={true}
+      javaScriptEnabled
+      domStorageEnabled
       onMessage={handleMessage}
     />
   );

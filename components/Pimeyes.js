@@ -3,20 +3,24 @@ import { Platform, BackHandler } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import store$ from '../state';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Pimeyes({ uri, onUrlChange, onTitleChange }) {
-  const webViewRef = useRef(null);
-  const [base64Data, setBase64Data] = useState(null);
-  const [canGoBack, setCanGoBack] = useState(false);
   const isFullPimeyes = store$.fullPimeyes.get()
+  const [base64Data, setBase64Data] = useState(null);
+
+  const [canGoBack, setCanGoBack] = useState(false);
+  const webViewRef = useRef(null);
+  const navigation = useNavigation();
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
       return true;
     }
-    return false;
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {

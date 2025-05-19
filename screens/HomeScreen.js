@@ -19,6 +19,7 @@ import * as FileSystem from 'expo-file-system';
 import Button from '../components/Button';
 import AnimatedSearchButton from '../components/AnimatedSearchButton';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import ModalComponent from '../components/ModalComponent';
 import ArticleItem from '../components/ArticleItem';
@@ -210,7 +211,7 @@ const HomeScreen = () => {
               <View style={styles.imageWrapper}>
                 <Image source={{ uri: image }} style={styles.image} />
                 <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
-                  <MaterialCommunityIcons name="star-four-points" size={20} color="white" />
+                  <FontAwesome name="gear" size={20} color="#0f0f0f" />
                 </TouchableOpacity>
                 {isLoading && (
                   <View style={styles.loadingOverlayImage}>
@@ -228,7 +229,7 @@ const HomeScreen = () => {
                 <View style={styles.imageWrapper}>
                   <Image source={{ uri: urlText }} style={styles.image} />
                   <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
-                    <MaterialCommunityIcons name="star-four-points" size={20} color="white" />
+                    <FontAwesome name="gear" size={20} color="#0f0f0f" />
                   </TouchableOpacity>
                   {isLoading && (
                     <View style={styles.loadingOverlayImage}>
@@ -328,12 +329,12 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: 5,
+    right: 5,
     height: 30,
     width: 30,
     borderRadius: 50,
-    backgroundColor: '#AB4ABA',
+    backgroundColor: '#F1F1F1',
     alignItems: 'center',
     justifyContent: 'center',
   },

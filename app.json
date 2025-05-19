@@ -20,7 +20,7 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "com.android.vending.BILLING"
       ],
       "package": "com.miriantsirekidze.sherlock",
       "versionCode": 5

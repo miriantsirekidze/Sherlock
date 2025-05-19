@@ -2,18 +2,21 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
+import { useNavigation } from '@react-navigation/native';
 
 const Yandex = ({ url, onUrlChange, onTitleChange }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
+  const navigation = useNavigation();
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
       return true;
     }
-    return false; 
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -28,7 +31,7 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
       if (message.type === "title" && message.title && onTitleChange) {
-        onTitleChange(message.title); 
+        onTitleChange(message.title);
       }
     } catch (error) {
       console.warn("Error parsing message from WebView:", error);
@@ -36,7 +39,7 @@ const Yandex = ({ url, onUrlChange, onTitleChange }) => {
   }
 
   const handleNavigationStateChange = (state) => {
-    store$.currentUrl.set(state.url); 
+    store$.currentUrl.set(state.url);
     setCanGoBack(state.canGoBack);
 
     if (onUrlChange) {

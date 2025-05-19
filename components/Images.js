@@ -2,18 +2,21 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
+import { useNavigation } from '@react-navigation/native';
 
 const Images = ({ url, onUrlChange, onTitleChange }) => {
-  const [canGoBack, setCanGoBack] = useState(true);
+  const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
+  const navigation = useNavigation();
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
-      return true; 
+      return true;
     }
-    return false;
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -22,7 +25,7 @@ const Images = ({ url, onUrlChange, onTitleChange }) => {
         BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
       };
     }
-  }, []);
+  }, [onAndroidBackPress]);
 
   const fullyEncodeUrl = (url) => encodeURIComponent(url);
   const encodedUrl = fullyEncodeUrl(url);
@@ -31,10 +34,10 @@ const Images = ({ url, onUrlChange, onTitleChange }) => {
     const filters = store$.getFilterString();
     return `${baseUrl}${filters}`;
   };
-  
+
   const baseUrl = `https://www.google.com/searchbyimage?image_url=${encodedUrl}&client=firefox-b-d'`;
   const finalUrl = buildFinalURL(baseUrl);
-  
+
   const handleMessage = (event) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);

@@ -2,18 +2,21 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import WebView from 'react-native-webview';
 import store$ from '../state';
+import { useNavigation } from '@react-navigation/native';
 
 const Trace = ({ url, onUrlChange, onTitleChange }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
+  const navigation = useNavigation();
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
-      return true; 
+      return true;
     }
-    return false; 
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -24,7 +27,6 @@ const Trace = ({ url, onUrlChange, onTitleChange }) => {
     }
   }, [onAndroidBackPress]);
 
-  // Remove the search-bar container entirely
   const injectionRemoveSearchBar = `
     (function() {
       try {
@@ -87,7 +89,7 @@ const Trace = ({ url, onUrlChange, onTitleChange }) => {
       onLoadEnd={() => {
         try {
           webViewRef.current?.injectJavaScript(injectionRemoveSearchBar);
-        } catch (err) {}
+        } catch (err) { }
       }}
     />
   );

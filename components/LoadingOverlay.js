@@ -26,19 +26,15 @@ const styles = StyleSheet.create({
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#333',
-    zIndex: 9999,            // extra-high so nothing can draw above it
+    zIndex: 9999,
     justifyContent: 'center',
     alignItems: 'center',
   },
   lottieAnimation: {
-    width: width / 1.5,
-    height: height / 1.5
+    width: width,
+    height: height
   },
   lottieContainer: {
-    height: width * 0.60, 
-    width: width * 0.60, 
-    borderRadius: 25, 
-    backgroundColor: '#C1C1C1', 
     alignItems: 'center',
     justifyContent: 'center'
   }

@@ -5,17 +5,18 @@ import { useNavigation } from '@react-navigation/native';
 import store$ from '../state';
 
 const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
+  const [canGoBack, setCanGoBack] = useState(false);
   const webViewRef = useRef(null);
   const navigation = useNavigation();
-  const [canGoBack, setCanGoBack] = useState(false);
 
   const onAndroidBackPress = useCallback(() => {
     if (canGoBack) {
       webViewRef.current?.goBack();
       return true;
     }
-    return false;
-  }, [canGoBack]);
+    navigation.goBack();
+    return true;
+  }, [canGoBack, navigation]);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -228,7 +229,7 @@ const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
     }
 
     try {
-      if(webViewRef.current) {
+      if (webViewRef.current) {
         webViewRef.current?.injectJavaScript(`
           (function() {
             const title = 'Copyseeker';
@@ -283,7 +284,7 @@ const Copyseeker = ({ url, onUrlChange, onTitleChange }) => {
         if (url) {
           setTimeout(() => {
             try {
-              if(webViewRef.current) {
+              if (webViewRef.current) {
                 webViewRef.current.injectJavaScript(getURLInjectionScript());
               }
             } catch (err) {
