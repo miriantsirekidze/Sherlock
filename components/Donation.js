@@ -28,24 +28,19 @@ export default function Donation({ visible, onRequestClose }) {
   );
 
   const onDonate = async (packageIdentifier) => {
-    console.log("🛎️ onDonate called for:", packageIdentifier);
     try {
       const { current } = await Purchases.getOfferings();
-      console.log("▶️ offerings.current:", current);
 
       const pkg = current?.availablePackages.find(
         p => p.identifier === packageIdentifier
       );
 
-      console.log("📦 pkg resolved:", pkg);
-
       if (!pkg) {
-        console.warn(`Package ${packageIdentifier} not found`);
+        ToastAndroid.show('Sorry, something went wrong.', ToastAndroid.SHORT)
         return;
       }
 
       const purchaseInfo = await Purchases.purchasePackage(pkg);
-      console.log("🎉 purchaseInfo:", purchaseInfo);
       setThanks(true)
     } catch (e) {
       if (!e.userCancelled) {

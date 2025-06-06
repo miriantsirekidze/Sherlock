@@ -8,7 +8,7 @@ import {
   Text,
   ActivityIndicator,
   ScrollView,
-  Alert
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -26,20 +26,24 @@ import ArticleItem from '../components/ArticleItem';
 import Footer from '../components/Footer';
 
 import { articles } from '../data/articles';
-import { PUBLIC_KEY } from '@env'
-
+import { PUBLIC_KEY } from '@env';
+import Donation from '../components/Donation';
 
 const HomeScreen = () => {
-
   NavigationBar.setBackgroundColorAsync('#0f0f0f');
 
   const [image, setImage] = useState(null);
-  const [urlText, setUrlText] = useState("");
-  const [lastUploaded, setLastUploaded] = useState({ uri: null, processedUrl: null, originalUrl: null });
+  const [urlText, setUrlText] = useState('');
+  const [lastUploaded, setLastUploaded] = useState({
+    uri: null,
+    processedUrl: null,
+    originalUrl: null,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [selection, setSelection] = useState(null);
   const [isUrlValid, setIsUrlValid] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [thanks, setThanks] = useState(false)
 
   const navigation = useNavigation();
 
@@ -53,7 +57,7 @@ const HomeScreen = () => {
       }
       return false;
     } catch (error) {
-      return url.trim().startsWith("http");
+      return url.trim().startsWith('http');
     }
   }
 
@@ -65,7 +69,7 @@ const HomeScreen = () => {
     console.log(result);
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      setSelection("image");
+      setSelection('image');
       if (isUrlValid === false) {
         setIsUrlValid(null);
       }
@@ -73,30 +77,31 @@ const HomeScreen = () => {
   };
 
   const uploadFile = async ({ imageUri = null, imageUrl = null }) => {
-    if (
-      (imageUrl && imageUrl === lastUploaded.originalUrl) ||
-      (imageUri && imageUri === lastUploaded.uri)
-    ) {
+    const alreadyUploaded =
+      (imageUri && imageUri === lastUploaded.uri) ||
+      (imageUrl && imageUrl === lastUploaded.originalUrl);
+
+    if (alreadyUploaded && lastUploaded.processedUrl) {
       return navigation.navigate('Search', {
         url: lastUploaded.processedUrl,
         uri: imageUri ?? null,
       });
     }
-  
+
     setIsLoading(true);
     const totalStart = performance.now();
-  
+
     try {
       const authStart = performance.now();
       const authRes = await fetch('https://sherlock.expo.app/keys');
       const authDuration = performance.now() - authStart;
       console.log(`⏱️ Auth fetch took: ${authDuration.toFixed(1)}ms`);
-  
+
       if (!authRes.ok) {
         throw new Error(`Auth fetch failed: ${authRes.status}`);
       }
       const { signature, token, expire } = await authRes.json();
-  
+
       let fileData;
       if (imageUri) {
         fileData = await FileSystem.readAsStringAsync(imageUri, {
@@ -105,7 +110,7 @@ const HomeScreen = () => {
       } else {
         fileData = imageUrl;
       }
-  
+
       const formData = new FormData();
       formData.append('file', fileData);
       formData.append('fileName', `${Date.now()}`);
@@ -113,7 +118,7 @@ const HomeScreen = () => {
       formData.append('signature', signature);
       formData.append('token', token);
       formData.append('expire', `${expire}`);
-  
+
       const uploadStart = performance.now();
       const response = await fetch(
         'https://upload.imagekit.io/api/v1/files/upload',
@@ -125,22 +130,22 @@ const HomeScreen = () => {
       );
       const uploadDuration = performance.now() - uploadStart;
       console.log(`⏱️ ImageKit upload took: ${uploadDuration.toFixed(1)}ms`);
-  
+
       if (!response.ok) {
         const text = await response.text();
         throw new Error(`Upload error ${response.status}: ${text}`);
       }
-  
+
       const data = await response.json();
       if (data.error) {
         throw new Error(
           `ImageKit: ${data.error.message || JSON.stringify(data.error)}`
         );
       }
-  
+
       const totalDuration = performance.now() - totalStart;
       console.log(`✅ Total uploadFile() took: ${totalDuration.toFixed(1)}ms`);
-  
+
       setLastUploaded({
         uri: imageUri,
         originalUrl: imageUrl,
@@ -154,8 +159,6 @@ const HomeScreen = () => {
       setIsLoading(false);
     }
   };
-  
-  
 
   const handleUrlSearch = async (enteredUrl) => {
     const isValid = await validateUrl(enteredUrl);
@@ -163,7 +166,7 @@ const HomeScreen = () => {
       setUrlText(enteredUrl);
       setIsUrlValid(true);
       console.log('URL is valid');
-      setSelection("url");
+      setSelection('url');
     } else {
       setIsUrlValid(false);
       setTimeout(() => {
@@ -175,28 +178,43 @@ const HomeScreen = () => {
   const resetSelection = () => {
     setSelection(null);
     setImage(null);
-    setUrlText("");
+    setUrlText('');
     setIsUrlValid(null);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        {selection && (
+        {selection ? (
           <TouchableOpacity onPress={resetSelection}>
             <MaterialCommunityIcons name="arrow-left" size={26} color="white" />
           </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={() => setThanks(true)}>
+            <MaterialCommunityIcons name='heart-outline' size={26} color={'white'}/>
+          </TouchableOpacity>
         )}
-        <TouchableOpacity onPress={() => navigation.navigate("Saved")} style={{ alignSelf: 'flex-end', marginLeft: 'auto' }}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Saved')}
+          style={{ alignSelf: 'flex-end', marginLeft: 'auto' }}
+        >
           <MaterialIcons name="bookmark-border" size={28} color="white" />
         </TouchableOpacity>
+        <Donation visible={thanks} onRequestClose={setThanks}/>
       </View>
 
-      <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} overScrollMode='never' >
+      <ScrollView
+        style={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        overScrollMode="never"
+      >
         <View style={styles.searchSection}>
           {selection === null && (
             <View style={styles.buttonRow}>
-              {isUrlValid === false && <Text style={styles.errorText}>URL is not correct</Text>}
+              {isUrlValid === false && (
+                <Text style={styles.errorText}>URL is not correct</Text>
+              )}
               <Button onPress={handleImage} icon="image" text="Image" />
               <Text style={{ color: 'white', marginTop: 10 }}>Or</Text>
               <AnimatedSearchButton
@@ -206,11 +224,14 @@ const HomeScreen = () => {
               />
             </View>
           )}
-          {selection === "image" && (
+          {selection === 'image' && (
             <>
               <View style={styles.imageWrapper}>
                 <Image source={{ uri: image }} style={styles.image} />
-                <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => setModalVisible(true)}
+                >
                   <FontAwesome name="gear" size={20} color="#0f0f0f" />
                 </TouchableOpacity>
                 {isLoading && (
@@ -219,16 +240,23 @@ const HomeScreen = () => {
                   </View>
                 )}
               </View>
-              <Button onPress={() => uploadFile({ imageUri: image })} icon="image-search-outline" text="Search" />
+              <Button
+                onPress={() => uploadFile({ imageUri: image })}
+                icon="image-search-outline"
+                text="Search"
+              />
               <Button onPress={handleImage} icon="image" text="Change" />
             </>
           )}
-          {selection === "url" && (
+          {selection === 'url' && (
             <>
               {isUrlValid ? (
                 <View style={styles.imageWrapper}>
                   <Image source={{ uri: urlText }} style={styles.image} />
-                  <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(true)}>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => setModalVisible(true)}
+                  >
                     <FontAwesome name="gear" size={20} color="#0f0f0f" />
                   </TouchableOpacity>
                   {isLoading && (
@@ -238,10 +266,15 @@ const HomeScreen = () => {
                   )}
                 </View>
               ) : (
-                isUrlValid === false && <Text style={styles.errorText}>Invalid URL</Text>
+                isUrlValid === false && (
+                  <Text style={styles.errorText}>Invalid URL</Text>
+                )
               )}
-              <Button onPress={() => uploadFile({ imageUrl: urlText })} icon="image-search-outline" text="Search" />
-
+              <Button
+                onPress={() => uploadFile({ imageUrl: urlText })}
+                icon="image-search-outline"
+                text="Search"
+              />
               <AnimatedSearchButton
                 urlText={urlText}
                 setUrlText={setUrlText}
@@ -252,14 +285,27 @@ const HomeScreen = () => {
         </View>
 
         <View style={styles.articlesSection}>
-          <Text style={{ fontSize: 21, color: 'white', margin: 20, fontWeight: 'bold' }}>Articles</Text>
+          <Text
+            style={{
+              fontSize: 21,
+              color: 'white',
+              margin: 20,
+              fontWeight: 'bold',
+            }}
+          >
+            Articles
+          </Text>
           {articles.map((item, index) => (
             <ArticleItem key={index} item={item} />
           ))}
         </View>
         <Footer />
       </ScrollView>
-      <ModalComponent visible={modalVisible} onClose={() => setModalVisible(false)} isUrl={isUrlValid} />
+      <ModalComponent
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        isUrl={isUrlValid}
+      />
     </SafeAreaView>
   );
 };

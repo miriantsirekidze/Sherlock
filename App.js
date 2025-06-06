@@ -11,6 +11,8 @@ import TipScreen from './screens/TipScreen';
 import Saved from './screens/Saved';
 import WebViewScreen from './screens/WebViewScreen';
 import useCleanOldFiles from './deletion';
+import Purchases from 'react-native-purchases';
+import {REVENUE_CAT_PUBLIC} from '@env'
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,6 +23,10 @@ export default function App() {
     'CaudexItalic': require('./assets/fonts/CaudexItalic.ttf'),
     'CaudexRegular': require('./assets/fonts/CaudexRegular.ttf'),
   });
+
+  Purchases.configure({
+    apiKey: REVENUE_CAT_PUBLIC
+  })
 
   useEffect(() => {
     if (fontsLoaded) {
