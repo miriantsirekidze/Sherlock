@@ -9,12 +9,13 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  ToastAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as NavigationBar from 'expo-navigation-bar';
-import * as FileSystem from 'expo-file-system';
 
 import Button from '../components/Button';
 import AnimatedSearchButton from '../components/AnimatedSearchButton';
@@ -24,15 +25,15 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import ModalComponent from '../components/ModalComponent';
 import ArticleItem from '../components/ArticleItem';
 import Footer from '../components/Footer';
+import Donation from '../components/Donation';
 
 import { articles } from '../data/articles';
 import { PUBLIC_KEY } from '@env';
-import Donation from '../components/Donation';
 
 const HomeScreen = () => {
   NavigationBar.setBackgroundColorAsync('#0f0f0f');
 
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(null); 
   const [urlText, setUrlText] = useState('');
   const [lastUploaded, setLastUploaded] = useState({
     uri: null,
@@ -43,36 +44,72 @@ const HomeScreen = () => {
   const [selection, setSelection] = useState(null);
   const [isUrlValid, setIsUrlValid] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [thanks, setThanks] = useState(false)
+  const [thanks, setThanks] = useState(false);
+
+  const [authParams, setAuthParams] = useState(null);
 
   const navigation = useNavigation();
+
+  const fetchAuthParams = async () => {
+    try {
+      const authStart = performance.now();
+      const authRes = await fetch('https://sherlock.expo.app/keys');
+      const authDuration = performance.now() - authStart;
+      console.log(`⏱️ Auth fetch took: ${authDuration.toFixed(1)}ms`);
+
+      if (!authRes.ok) {
+        throw new Error(`Auth fetch failed: ${authRes.status}`);
+      }
+      const { signature, token, expire } = await authRes.json();
+      const expireAt = expire * 1000;
+      setAuthParams({ signature, token, expire, expireAt });
+    } catch (err) {
+      console.error('Failed to fetch auth params:', err);
+    }
+  };
 
   async function validateUrl(url) {
     if (!url || !url.trim()) return false;
     try {
       const res = await fetch(url, { method: 'HEAD' });
       const contentType = res.headers.get('Content-Type');
-      if (contentType && contentType.startsWith('image/')) {
-        return true;
-      }
-      return false;
+      return contentType?.startsWith('image/');
     } catch (error) {
       return url.trim().startsWith('http');
     }
   }
 
+  async function shrinkImageAsync(uri) {
+    try {
+      const actions = [{ resize: { width: 800, height: 800 } }];
+      const saveOptions = { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG };
+      const result = await ImageManipulator.manipulateAsync(uri, actions, saveOptions);
+      return result.uri;
+    } catch (err) {
+      console.warn('Image compression failed, using original URI:', err);
+      return uri;
+    }
+  }
+
   const handleImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 1,
-    });
-    console.log(result);
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setSelection('image');
-      if (isUrlValid === false) {
-        setIsUrlValid(null);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 1,
+      });
+      console.log('ImagePicker result:', result);
+      if (!result.canceled) {
+        const originalUri = result.assets[0].uri;
+        const compressedUri = await shrinkImageAsync(originalUri);
+        setImage(compressedUri);
+        setSelection('image');
+        if (isUrlValid === false) {
+          setIsUrlValid(null);
+        }
+        fetchAuthParams();
       }
+    } catch (err) {
+      console.error('handleImage error:', err);
     }
   };
 
@@ -92,27 +129,26 @@ const HomeScreen = () => {
     const totalStart = performance.now();
 
     try {
-      const authStart = performance.now();
-      const authRes = await fetch('https://sherlock.expo.app/keys');
-      const authDuration = performance.now() - authStart;
-      console.log(`⏱️ Auth fetch took: ${authDuration.toFixed(1)}ms`);
-
-      if (!authRes.ok) {
-        throw new Error(`Auth fetch failed: ${authRes.status}`);
+      const now = Date.now();
+      if (!authParams || now >= authParams.expireAt) {
+        await fetchAuthParams();
       }
-      const { signature, token, expire } = await authRes.json();
-
-      let fileData;
-      if (imageUri) {
-        fileData = await FileSystem.readAsStringAsync(imageUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-      } else {
-        fileData = imageUrl;
+      if (!authParams) {
+        ToastAndroid.show('No Internet, please try later.', ToastAndroid.SHORT)
       }
+
+      const { signature, token, expire } = authParams;
 
       const formData = new FormData();
-      formData.append('file', fileData);
+      if (imageUri) {
+        formData.append('file', {
+          uri: imageUri,
+          name: `${Date.now()}.jpg`,
+          type: 'image/jpeg',
+        });
+      } else {
+        formData.append('file', imageUrl);
+      }
       formData.append('fileName', `${Date.now()}`);
       formData.append('publicKey', PUBLIC_KEY);
       formData.append('signature', signature);
@@ -151,6 +187,7 @@ const HomeScreen = () => {
         originalUrl: imageUrl,
         processedUrl: data.url,
       });
+
       navigation.navigate('Search', { url: data.url, uri: imageUri });
     } catch (err) {
       console.error('Upload failed:', err);
@@ -167,6 +204,7 @@ const HomeScreen = () => {
       setIsUrlValid(true);
       console.log('URL is valid');
       setSelection('url');
+      fetchAuthParams();
     } else {
       setIsUrlValid(false);
       setTimeout(() => {
@@ -191,7 +229,7 @@ const HomeScreen = () => {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity onPress={() => setThanks(true)}>
-            <MaterialCommunityIcons name='heart-outline' size={26} color={'white'}/>
+            <MaterialCommunityIcons name="heart-outline" size={26} color="white" />
           </TouchableOpacity>
         )}
         <TouchableOpacity
@@ -200,7 +238,7 @@ const HomeScreen = () => {
         >
           <MaterialIcons name="bookmark-border" size={28} color="white" />
         </TouchableOpacity>
-        <Donation visible={thanks} onRequestClose={setThanks}/>
+        <Donation visible={thanks} onRequestClose={setThanks} />
       </View>
 
       <ScrollView
@@ -301,6 +339,7 @@ const HomeScreen = () => {
         </View>
         <Footer />
       </ScrollView>
+
       <ModalComponent
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
