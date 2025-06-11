@@ -1,12 +1,16 @@
 {
   "cli": {
     "version": ">= 16.3.3",
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      }
     },
     "preview": {
       "distribution": "internal"
